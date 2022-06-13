@@ -1,0 +1,5 @@
+*.rhl
+*.3dmbak
+_ss
+__pycache__
+__rhinopythonref.cs

@@ -1,0 +1,162 @@
+"""
+    this code initilize common setup for gh_script components
+    to utilize development pipeline
+
+    it runs from gh_python component instance via exec()
+    locals() are passed as args making available component args and __buildins__
+
+    possible to init sertain parts(blocks) by spliting this txt file with block_spliter
+
+    to enable block init status callback - define init_callback(msg) prior to
+    exec in gh_component
+
+    functionality:
+        • REMOTE:
+                - defines timed update func -- updateWithTimer()
+                - listens for gh_remote to have valid rpyc connection,
+                    recomputes component solution until found
+        • MODULES:
+                - exec formated string to load same modules for all components
+                    this reduces runtime load when components runs per input item
+                    import string pushed trough different component to sticky var
+        • AUTOUPDATE:
+                - prepares component to handle update event for solution recompute
+                - also automatically changes name for first component input
+        • MISC:
+                - push_print2glob() - pushes print output to RCP for fast remote debug
+"""
+
+# %block_spliter#$import
+# IMPORT  ------------------------------------------------------------------------------
+# looking for valid connection to remote python
+import Grasshopper.Kernel.GH_RuntimeMessageLevel as runtimeMessage
+import ghpythonremote
+import Rhino
+import Grasshopper as gh
+
+# %block_spliter#$remote
+# TIMED UPDATE ------------------------------------------------ ------------------------------
+# looking for valid connection to remote python
+
+try:
+    _verbose_init
+except:
+    _verbose_init = False
+
+
+# %block_spliter#$modules
+# REMOTE -----------------------------------------------------------------------
+# loads python modules via script context
+def updateWithTimer(ghEnv, msec):
+    def callBack(e):
+        ghEnv.Component.ExpireSolution(False)
+
+    ghDoc = ghEnv.Component.OnPingDocument()
+    ghDoc.ScheduleSolution(msec, gh.Kernel.GH_Document.GH_ScheduleDelegate(callBack))
+
+
+try:
+    sc.sticky["remotepy"]
+    isConnected = sc.sticky["remotepy"]
+except:
+    isConnected = False
+
+if not isConnected:
+    # recompute component every second
+    updateWithTimer(ghenv, 1000)
+    raise Exception("no connection")
+
+if _verbose_init:
+    try:
+        init_callback("REMOTE init")
+    except:
+        pass
+
+# %block_spliter#$modules
+# GLOBAL MODULES -----------------------------------------------------------------------
+# loads python modules via script context
+try:
+    locals()["updateWithTimer"]
+except:
+
+    def updateWithTimer(ghEnv, msec):
+        def callBack(e):
+            ghEnv.Component.ExpireSolution(False)
+
+        ghDoc = ghEnv.Component.OnPingDocument()
+        ghDoc.ScheduleSolution(
+            msec, gh.Kernel.GH_Document.GH_ScheduleDelegate(callBack)
+        )
+
+
+try:
+    exec (sc.sticky["module_import_string"], locals())
+except:
+    updateWithTimer(ghenv, 1000)
+    ghenv.Component.AddRuntimeMessage(runtimeMessage.Error, "failed to load modules")
+
+if _verbose_init:
+    try:
+        init_callback("MODULES init")
+    except:
+        pass
+
+# %block_spliter#$autoupdate
+# AUTO UPDATE --------------------------------------------------------------------------
+# adds remote expire event functionality. To enable add autoUpdate input toggle
+def rename_input():
+    if ghenv.Component.Params.IndexOfInputParam("autoUpdate") == -1:
+        ghenv.Component.Params.Input[0].NickName = "autoUpdate"
+        ghenv.Component.Params.Input[0].Name = "autoUpdate"
+        ghenv.Component.ExpireSolution(True)
+    else:
+        changed = False
+        idx = ghenv.Component.Params.IndexOfInputParam("autoUpdate")
+        if ghenv.Component.Params.Input[idx].Name != "autoUpdate":
+            ghenv.Component.Params.Input[idx].NickName = "autoUpdate"
+            changed = True
+        if ghenv.Component.Params.Input[idx].NickName != "autoUpdate":
+            ghenv.Component.Params.Input[idx].NickName = "autoUpdate"
+            changed = True
+        if changed:
+            ghenv.Component.ExpireSolution(True)
+
+
+try:
+    autoUpdate
+    if autoUpdate:
+        if not ev.is_tracking_updates(locals()):
+            ev.register_component_updates(locals())
+            print "autoupdate registered"
+    else:
+        if ev.is_tracking_updates(locals()):
+            ev.unregister_component_updates(locals())
+            print "autoupdate unregistered"
+
+    if ev.is_tracking_updates(locals()):
+        if sc.sticky[ev.key_comp_expire][ghenv.Component.InstanceGuid.ToString()]:
+            print "automatically updated"
+except:
+    if ghenv.Component.Params.Input.Count > 0:
+        rename_input()
+
+if _verbose_init:
+    try:
+        init_callback("AUTOUPDATE init")
+    except:
+        pass
+# %block_spliter#$misc
+# MISC --------------------------------------------------------------------------
+# adds remote expire event functionality. To enable add autoUpdate input toggle
+def push_print2glob():
+    sc.sticky["printglobal"] = ghenv.Component.Params.Output[0].VolatileData
+
+
+if _verbose_init:
+    try:
+        init_callback("MISC init")
+    except:
+        pass
+################################################################################
+# USER CODE BELOW
+################################################################################
