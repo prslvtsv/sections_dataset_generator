@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# reworked for py2.7 by @prslvtsv
+# majority is reworked by @prslvtsv to downgrade for py2.7
 
 """
 MIT License
@@ -31,6 +31,7 @@ SOFTWARE.
 
 import math
 
+
 class Vec2:
     """Represent a vector with 2 coordinates"""
 
@@ -40,7 +41,7 @@ class Vec2:
                 assert len(x) == 2
                 self._create(*x)
             except AssertionError:
-                raise ValueError('Vec2 must have exactly 2 components!')
+                raise ValueError("Vec2 must have exactly 2 components!")
         else:
             self._create(x, y)
 
@@ -49,10 +50,10 @@ class Vec2:
             self.x = float(x)
             self.y = float(y)
         except (ValueError, TypeError) as e:
-            print 'Vector components must be float convertable!'
+            print "Vector components must be float convertable!"
 
     def __str__(self):
-        return 'Vec2({}, {})'.format(self.x, self.y)
+        return "Vec2({}, {})".format(self.x, self.y)
 
     __repr__ = __str__
 
@@ -73,7 +74,7 @@ class Vec2:
     def __mul__(self, scalar):
         """Multiply the vector with a scalar"""
         if type(scalar) is not int and type(scalar) is not float:
-            raise TypeError('Only scalar multiplication allow for Vec2')
+            raise TypeError("Only scalar multiplication allow for Vec2")
         return Vec2(scalar * self.x, scalar * self.y)
 
     __rmul__ = __mul__
@@ -104,6 +105,7 @@ class Vec2:
         """Return the normalized vec2"""
         return self / self.norm()
 
+
 class Vec3:
     """Represent a vector with 3 coordinates"""
 
@@ -113,7 +115,7 @@ class Vec3:
                 assert len(x) == 3
                 self._create(*x)
             except AssertionError:
-                raise ValueError('Vec3 must have exactly 3 components!')
+                raise ValueError("Vec3 must have exactly 3 components!")
         elif type(x) is Vec2:
             self._create(x.x, x.y, 0)
         else:
@@ -125,10 +127,10 @@ class Vec3:
             self.y = float(y)
             self.z = float(z)
         except (ValueError, TypeError) as e:
-            print'Vector components must be float convertable!'
+            print "Vector components must be float convertable!"
 
     def __str__(self):
-        return 'Vec3({}, {}, {})'.format(self.x, self.y, self.z)
+        return "Vec3({}, {}, {})".format(self.x, self.y, self.z)
 
     __repr__ = __str__
 
@@ -149,7 +151,7 @@ class Vec3:
     def __mul__(self, scalar):
         """Multiply the vector with a scalar"""
         if type(scalar) is not int and type(scalar) is not float:
-            raise TypeError('Only scalar multiplication allow for Vec3')
+            raise TypeError("Only scalar multiplication allow for Vec3")
         return Vec3(scalar * self.x, scalar * self.y, scalar * self.z)
 
     __rmul__ = __mul__
