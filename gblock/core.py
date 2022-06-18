@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Apr 18 09:38:10 2022
+"""Old core classes used in current scripts itteration
 
+All are OBSOLETE, moving to new class structure (see gblock.elemets for additiinal info)
+
+Created on Tue Apr 18 09:38:10 2022
 @author: prslvtsv
 """
 

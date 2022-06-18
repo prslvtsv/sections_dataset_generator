@@ -1,7 +1,20 @@
 # -*- coding: utf-8 -*-
-"""
-Created on 23.05.2022
+"""Module to enable even callbacks inside GH using Rhino Events
 
+This module uses ghPython component uinique runtime ID to create per component
+event handler and expire quie in global Rhino context.
+Aslo uses component locals() to pass object references around (arg:"loc" in methods)
+
+
+UPD 17.06.2022: Mainly used now for automatic component recompute
+    helping with Rhino script context sticky variables usage.
+    resolves issue when context updates do not propagate to the component,
+    unless it's manualy updated.
+
+    It becomes ridiculously painful to click and re-run every compoennt one by one,
+    when having several of them utilizing Rhino sctipt context (SC)
+
+Created on 23.05.2022
 @author: prslvtsv
 """
 

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-
-🔸 intended for use with gh-python-remote CPython 2.7 🔸
-
-Created on 18 May 2022
+dev tests for DB N-dims array creation
+not functional currently
 
 @author: prslvtsv
 """

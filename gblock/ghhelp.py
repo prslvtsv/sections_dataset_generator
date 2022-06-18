@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Created on 05.05.2022
+"""Helper functions to utilize Grashopper SDK & RhinoCommon SDK methods
 
+UPD 17.06.2022: Needs cleaning & documenting 
+
+Created on 05.05.2022
 @author: prslvtsv
 """
 
