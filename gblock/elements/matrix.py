@@ -163,6 +163,7 @@ class SpacialMatrix(AssemblyBlock):
             • SpacialMatrix: newly created object
         """
         bnd = SpacialMatrix.bound_indexes(indxs)
+        print(bnd)
         shp = SpacialMatrix.shape_from_bound(bnd)
         pdn = SpacialMatrix.padding_from_bound(bnd)
 
@@ -176,9 +177,12 @@ class SpacialMatrix(AssemblyBlock):
     def bound_indexes(indx):
         """computes matrix actual index ranges from list of (i, j) indexes"""
         if len(indx) == 0:
+            # print(len(indx))
             return ((0, 0), (0, 0))
         elif len(indx[0]) == 0:
+            # print(len(indx))
             return ((0, 0), (0, 0))
+        # print(len(indx))
         ri = [a[0] for a in indx]
         rj = [a[1] for a in indx]
         #
@@ -191,8 +195,8 @@ class SpacialMatrix(AssemblyBlock):
 
     @staticmethod
     def shape_from_bound(bound):
-        if bound[0][0] + bound[0][1] + bound[1][0] + bound[1][1] == 0:
-            return (0, 0)
+        # if bound[0][0] + bound[0][1] + bound[1][0] + bound[1][1] == 0:
+        #     return (0, 0)
         return ((bound[0][1] - bound[0][0]) + 1, (bound[1][1] - bound[1][0]) + 1)
 
     @staticmethod
