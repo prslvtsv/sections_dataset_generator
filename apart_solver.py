@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
-"""
+"""Script to solve every possible exact cover solution
+
+Runs from Grasshopper in terminal unsing python 3.9
+(dependensies - just numpy, as far as I know)
+
+GH prepares board and tiles indexes and pushes them as execution
+arguments
+
 Created on 21 Jun 2022
 
 @author: prslvtsv
