@@ -19,7 +19,7 @@ Created on 15 Jun 2022
 @author: prslvtsv
 """
 
-from gtypes import NestedObject, AssemblyBlock
+from .gtypes import NestedObject, AssemblyBlock
 
 
 class MatrixCell(NestedObject):
