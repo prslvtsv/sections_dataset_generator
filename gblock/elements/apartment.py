@@ -1,72 +1,35 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on 22 Jun 2022
 
 @author: prslvtsv
 """
+import os
+import sys
 
-from matrix import SpacialMatrix, MatrixCell, rotate_and_reflect
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+sys.path.append(PROJECT_ROOT)
+
+from elements.matrix import SpacialMatrix, rotate_and_reflect
+from collections import OrderedDict
 
 
 class Apartment(SpacialMatrix):
     def __init__(self, padding=(0, 0)):
         SpacialMatrix.__init__(self, padding)
+        self.attrib = OrderedDict()
 
-    def layout_pos(self):
-        return self.indexes(glob=True)
+    @property
+    def tiles(self):
+        return self.cells
 
-    @staticmethod
-    def create_empty(shape, padding=(0, 0)):
-        mtx = Apartment(padding)
-        si, sj = shape
-        mtx.cells = []
-        for i in range(0, si):
-            mtx.cells.append([])
-            for j in range(0, sj):
-                mtx.cells[i].append(MatrixCell((i, j), mtx))
-        return mtx
-
-    @staticmethod
-    def create_from_indexes(indxs, data=None):
-        iv, jv = [a[0] for a in indxs], [a[1] for a in indxs]
-        pnd = (min(iv), min(jv))
-        loc_idx = [(i - pnd[0], j - pnd[1]) for (i, j) in indxs]
-        bnd = Apartment.bound_indexes(loc_idx)
-        shp = Apartment.shape_from_bound(bnd)
-        return (
-            Apartment.create_empty(shp, pnd)
-            .enable_cells_by_indexes(loc_idx)
-            .fill_by_indexes(loc_idx, data)
-        )
-
-    @staticmethod
-    def compare(a, b, mode="exact"):
-        def xor_sets(a, b):
-            xr = set(a) ^ set(b)
-            return len(xr)
-
-        def shape(a, b):
-            return True if xor_sets(a.shape(), b.shape()) == 0 else False
-
-        def overlay_exact(a, b):
-            return True if xor_sets(a, b) == 0 else False
-
-        def overlay_rotational(a, b):
-            rotated = list(rotate_and_reflect(a.active_indexes()))
-            result = sum([overlay_exact(r, b.active_indexes()) for r in rotated])
-            return True if result >= 1 else False
-
-        # test if
-        if mode in "exact":
-            return overlay_exact(a, b)
-        # test if matrix formation same despite spacial orientation
-        if mode in "formation":
-            return overlay_rotational(a, b)
+    # def layout_pos(self):
+    #     return self.indexes(glob=True)
 
 
-# def apart_from_indexes(indexes):
-#     return Apartment.create_from_indexes(indexes)
+class ApartmentTempate(Apartment):
+    def __init__(self):
+        Apartment.__init__(self)
 
 
 if __name__ == "__main__":
@@ -92,12 +55,13 @@ if __name__ == "__main__":
     aparts = []
 
     for res in exactCoverResult:
-        apt = Apartment.create_from_indexes(res)
+        apt = Apartment().from_indexes(res)
         aparts.append(apt)
-        # print(apt.indexes())
-        # print(apt.layout_pos())
-        # print()
+        print(apt.indexes(glob=True))
+        print(apt.tiles)
+        print("_____________")
+        print()
     ap = aparts[0]
-    bp = aparts[-1]
+    bp = aparts[1]
 
-    print(Apartment.compare(ap, bp))
+    # print(Apartment.compare(ap, bp, mode="formation"))
