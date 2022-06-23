@@ -97,16 +97,20 @@ if __name__ == "__main__":
         # sizes = [(t.size[0] / 1000, t.size[1] / 1000) for t in d.tiles]
         sizes = [t.size for t in d.tiles]
         attributes = [t.attrib for t in d.tiles]
+        ref = [a.ref for a in d.tiles]
         apt = Apartment().from_indexes(idx, sizes)
         print(apt, end=" ")
         print(apt.indexes())
         print()
         print(apt.raw())
-        # for k, v in d.attrib.items():
-        #     print(k, "=", ", ".join(v))
+        for k, v in d.attrib.items():
+            print(k, "=", ", ".join(v))
         for at in attributes:
             print(at)
         # print(attributes)
+
+        print(ref)
+
         print()
         print("••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••")
         print()
