@@ -24,3 +24,20 @@ class Tile(MatrixCell):
 
     # def set_attributes(self, attrib):
     #     self.attrib = atrib
+
+
+class TileDump:
+    def __init__(self):
+        # self.pos = None
+        self.attrib = {}
+        self.utils = {}
+        self.outline = []
+        self.size = []
+        self.ref = {}
+
+
+################################################
+################################################
+if __name__ == "__main__":
+    tile = Tile()
+    tile.clear_data()

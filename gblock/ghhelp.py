@@ -27,6 +27,20 @@ def xy2ij(points):
     return list(zip(i, j))
 
 
+class Convert:
+    @staticmethod
+    def point2vec(p3d):
+        return Vec3(p3d.X, p3d.Y, p3d.Z) if isinstance(p3d, Point3d) else None
+
+    @staticmethod
+    def point2coord(p3d):
+        return (p3d.X, p3d.Y, p3d.Z)
+
+    @staticmethod
+    def polyline2coord(poly):
+        return [Convert.point2coord(p) for p in poly.ToArray()]
+
+
 class Helper:
     @staticmethod
     def get_by_id_geo(guid):

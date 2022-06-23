@@ -47,6 +47,9 @@ class MatrixCell(NestedObject):
     def index(self, glob=False):
         return self._glob() if glob else self.pos
 
+    def clear_data(self):
+        self.data = None
+
     def __repr__(self):
         # return "⚫" if self.active else "⚪"
         return "⬛" if self.active else "⬜"
@@ -87,6 +90,9 @@ class SpacialMatrix(AssemblyBlock):
     def indexes(self, glob=False):
         return [a.index(glob) for a in self._every_cell()]
 
+    def cells_list(self):
+        return list(self._every_cell())
+
     def active_cells(self):
         return [a for a in self._every_cell() if a.active]
 
@@ -109,19 +115,11 @@ class SpacialMatrix(AssemblyBlock):
     def shape(self):
         return (len(self.cells), len(self.cells[0]))
 
-    def __repr__(self):
-        rp = [[c.__repr__() for c in a] for a in self._rows()]
-        # print(rp)
-        col = []
-        for i in range(len(rp[0])):
-            col.append([])
-        for i in range(len(col)):
-            col[i] = "".join([r[i] for r in rp])
-        col.reverse()
-        return "\n".join(col)
-
-    def __str__(self):
-        return self.__repr__()
+    def clear_cell_data(self):
+        for c in self._every_cell():
+            c.clear_data()
+            # print("cc ", c)
+        # [c.clear_data() for c in self._every_cell()]
 
     def empty(self, shape, padding=(0, 0)):
         self.padding = padding
@@ -143,6 +141,20 @@ class SpacialMatrix(AssemblyBlock):
         self.enable_cells_by_indexes(loc_idx)
         self.fill_by_indexes(loc_idx, data)
         return self
+
+    def __repr__(self):
+        rp = [[c.__repr__() for c in a] for a in self._rows()]
+        # print(rp)
+        col = []
+        for i in range(len(rp[0])):
+            col.append([])
+        for i in range(len(col)):
+            col[i] = "".join([r[i] for r in rp])
+        col.reverse()
+        return "\n".join(col)
+
+    def __str__(self):
+        return self.__repr__()
 
     # # OBSOLETE remove later
     # @staticmethod
