@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Helper functions to utilize Grashopper SDK & RhinoCommon SDK methods
 
-UPD 17.06.2022: Needs cleaning & documenting 
+UPD 17.06.2022: Needs cleaning & documenting
 
 Created on 05.05.2022
 @author: prslvtsv
@@ -16,6 +16,15 @@ import Rhino
 import core
 
 reload(core)
+
+# works with Point3d
+def xy2ij(points):
+    xx, yy = [p.X for p in points], [p.Y for p in points]
+    unique_x = sorted(list(set([round(x) for x in xx])))
+    unique_y = sorted(list(set([round(y) for y in yy])))
+    i = [unique_x.index(round(xp)) for xp in xx]
+    j = [unique_y.index(round(yp)) for yp in yy]
+    return list(zip(i, j))
 
 
 class Helper:
