@@ -8,11 +8,12 @@ import os
 import sys
 import copy
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+PROJECT_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+)
 sys.path.append(PROJECT_ROOT)
 
-from elements.matrix import SpacialMatrix, rotate_and_reflect
-import elements
+from gblock.elements.matrix import SpacialMatrix, rotate_and_reflect
 from collections import OrderedDict
 
 
@@ -51,7 +52,7 @@ class ApartmentTemplate(Apartment):
 
 class ApartmentDump:
     def __init__(self):
-        self.attrib = None
+        self.attrib = {}
         self.tiles = None
 
 
@@ -65,7 +66,7 @@ if __name__ == "__main__":
         [(2, 0), (2, 1)],
     ]
 
-    testTiles = [elements.tile.Tile(), elements.tile.Tile()]
+    # testTiles = [elements.tile.Tile(), elements.tile.Tile()]
     # [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
     # [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
 
@@ -80,14 +81,44 @@ if __name__ == "__main__":
 
     aparts = []
 
-    for res in exactCoverResult:
-        apt = Apartment().from_indexes(res)
-        aparts.append(apt)
-        # testTiles.append(apt.cells)
-        # print(apt.active_cells())
-        # print(apt.cells)
-        aptTempl = ApartmentTemplate().from_tiles(apt.cells_list())
-        print(aptTempl)
+    import sys
+    import pickle
+
+    set_name = "apt_test_2_0622.apart"
+    path = (
+        "C:\\Users\\GUEST\\Documents\\CODE\\aective\\sectiondev\\sections_dataset_generator\\_dumps\\"
+        + set_name
+    )
+
+    with open(path, "rb") as file:
+        data = pickle.load(file)
+    for d in data:
+        idx = [t.pos for t in d.tiles]
+        # sizes = [(t.size[0] / 1000, t.size[1] / 1000) for t in d.tiles]
+        sizes = [t.size for t in d.tiles]
+        attributes = [t.attrib for t in d.tiles]
+        apt = Apartment().from_indexes(idx, sizes)
+        print(apt, end=" ")
+        print(apt.indexes())
+        print()
+        print(apt.raw())
+        # for k, v in d.attrib.items():
+        #     print(k, "=", ", ".join(v))
+        for at in attributes:
+            print(at)
+        # print(attributes)
+        print()
+        print("••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••")
+        print()
+    # for res in exactCoverResult:
+
+    # apt = Apartment().from_indexes(res)
+    # aparts.append(apt)
+    # testTiles.append(apt.cells)
+    # print(apt.active_cells())
+    # print(apt.cells)
+    # aptTempl = ApartmentTemplate().from_tiles(apt.cells_list())
+    # print(aptTempl)
     #     print(apt.indexes(glob=True))
     #     print(apt.tiles)
     #     print("_____________")
@@ -97,3 +128,4 @@ if __name__ == "__main__":
     # print(Apartment.compare(ap, bp, mode="formation"))
 
     # print(testTiles)
+#%%

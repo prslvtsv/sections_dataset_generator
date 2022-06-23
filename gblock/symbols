@@ -35,6 +35,19 @@
 🔥🔒🔗💊🩸
 🤓🏛️🌋⚓🚧🚀🛰️
 
- -ExecutionPolicy ByPass -NoExit -Command C:\\Users\\GUEST\\anaconda3\\shell\\condabin\\conda-hook.ps1 ; conda activate C:\\Users\\GUEST\\anaconda3"
-
- %windir%\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy ByPass -NoExit -Command "& 'C:\Users\GUEST\anaconda3\shell\condabin\conda-hook.ps1' ; conda activate 'C:\Users\GUEST\anaconda3' "
+🟥🟥 Red Square
+🔳🔳
+🟧 Orange Square
+🟨 Yellow Square
+🟩 Green Square
+🟦 Blue Square
+🟪 Purple Square
+🟫 Brown Square
+⬛ Black Large Square
+⬜ White Large Square
+◼️ Black Medium Square
+◻️ White Medium Square
+◾ Black Medium-Small Square
+◽ White Medium-Small Square
+▪️ Black Small Square
+▫️ White Small Square

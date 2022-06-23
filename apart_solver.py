@@ -77,7 +77,11 @@ def run_test():
 
     aptLayouts = run_dlx_sim(test_board, test_aparts)
     for s in aptLayouts:
-        print(s)
+        for t in s:
+
+            mtx = SpacialMatrix().from_indexes(t)
+            print(mtx)
+            print()
 
 
 def prepare_args():
@@ -94,7 +98,7 @@ if __name__ == "__main__":
     else:
         args = prepare_args()
         # print(args.board)
-        # board, aparts = None, None
+        board, aparts = None, None
         exec("board = {}".format(args.board.strip()))
         exec("aparts = {}".format(args.aparts.strip()))
         #

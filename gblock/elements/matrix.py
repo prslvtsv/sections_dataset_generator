@@ -21,10 +21,13 @@ Created on 15 Jun 2022
 import os
 import sys
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+
+PROJECT_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+)
 sys.path.append(PROJECT_ROOT)
 
-from elements.gtypes import NestedObject, AssemblyBlock
+from gblock.elements.gtypes import NestedObject, AssemblyBlock
 
 
 class MatrixCell(NestedObject):
@@ -50,9 +53,28 @@ class MatrixCell(NestedObject):
     def clear_data(self):
         self.data = None
 
+    def display(self):
+        # return "⚫" if self.active else "⚪"
+        if self.parent.count_active() == 2:
+            return "🟨" if self.active else "⬛"
+        return "⬜" if self.active else "⬛"
+
     def __repr__(self):
         # return "⚫" if self.active else "⚪"
+        # if self.parent.count_active() == 2:
+        #     return "🟨" if self.active else "⬛"
+        # if self.parent.count_active() == 3:
+        #     return "🟧" if self.active else "⬛"
+        # if self.parent.count_active() == 4:
+        #     return "🟥" if self.active else "⬛"
+        # if self.parent.count_active() == 5:
+        #     return "🟪" if self.active else "⬛"
+        # if self.parent.count_active() == 6:
+        #     return "🟦" if self.active else "⬛"
+        # if self.parent.count_active() == 6:
+        #     return "🟩" if self.active else "⬛"
         return "⬛" if self.active else "⬜"
+        # return "⬜" if self.active else "⬛"
 
 
 class SpacialMatrix(AssemblyBlock):

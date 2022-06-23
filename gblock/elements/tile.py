@@ -28,7 +28,7 @@ class Tile(MatrixCell):
 
 class TileDump:
     def __init__(self):
-        # self.pos = None
+        self.pos = None
         self.attrib = {}
         self.utils = {}
         self.outline = []
