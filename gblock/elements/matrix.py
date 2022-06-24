@@ -38,6 +38,7 @@ class MatrixCell(NestedObject):
         self.pos = pos
         self.data = None
         self.active = enable
+        self.color = "⬛"
         if not self.parent is None:
             self.pp = self.parent.padding
 
@@ -53,11 +54,11 @@ class MatrixCell(NestedObject):
     def clear_data(self):
         self.data = None
 
-    def display(self):
-        # return "⚫" if self.active else "⚪"
-        if self.parent.count_active() == 2:
-            return "🟨" if self.active else "⬛"
-        return "⬜" if self.active else "⬛"
+    def display(self, char=None):
+        if not char is None:
+            self.color = char
+        return self.color if self.active else "⬜"
+        # return "⬛" if self.active else "⬛"
 
     def __repr__(self):
         # return "⚫" if self.active else "⚪"
@@ -85,6 +86,7 @@ class SpacialMatrix(AssemblyBlock):
         # self.shape = shape
         self.cells = []
         self.padding = padding
+        self.colors = ("⬜", "⬛", "🟨", "🟦", "🟧", "🟪", "🟥", "🟩")
 
     def enable_cells_by_indexes(self, indxs):
         for i, j in indxs:
@@ -163,6 +165,40 @@ class SpacialMatrix(AssemblyBlock):
         self.enable_cells_by_indexes(loc_idx)
         self.fill_by_indexes(loc_idx, data)
         return self
+
+    def display_groups(self, groups):
+        for g in groups:
+            s = int(round(len(g) / 2))
+            if s >= len(self.colors):
+                char = self.colors[0]
+            else:
+                char = self.colors[s]
+            for i, j in g:
+                self.cells[i][j].color = char
+
+        rp = [[c.display(char) for c in a] for a in self._rows()]
+        col = []
+        for i in range(len(rp[0])):
+            col.append([])
+        for i in range(len(col)):
+            col[i] = "".join([r[i] for r in rp])
+        col.reverse()
+        return "\n".join(col)
+
+    def display(self):
+        s = self.count_active()
+        if s >= len(self.colors):
+            char = self.colors[0]
+        else:
+            char = self.colors[s]
+        rp = [[c.display(char) for c in a] for a in self._rows()]
+        col = []
+        for i in range(len(rp[0])):
+            col.append([])
+        for i in range(len(col)):
+            col[i] = "".join([r[i] for r in rp])
+        col.reverse()
+        return "\n".join(col)
 
     def __repr__(self):
         rp = [[c.__repr__() for c in a] for a in self._rows()]

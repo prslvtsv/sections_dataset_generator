@@ -84,7 +84,7 @@ if __name__ == "__main__":
     import sys
     import pickle
 
-    set_name = "apt_test_2_0622.apart"
+    set_name = "all_read_20220623.apt"
     path = (
         "C:\\Users\\GUEST\\Documents\\CODE\\aective\\sectiondev\\sections_dataset_generator\\_dumps\\"
         + set_name
@@ -92,28 +92,34 @@ if __name__ == "__main__":
 
     with open(path, "rb") as file:
         data = pickle.load(file)
-    for d in data:
-        idx = [t.pos for t in d.tiles]
+
+    def print_tile_dump(tile):
+        pass
+
+    def print_apt_dump(apt):
+        idx = [t.pos for t in apt.tiles]
         # sizes = [(t.size[0] / 1000, t.size[1] / 1000) for t in d.tiles]
-        sizes = [t.size for t in d.tiles]
-        attributes = [t.attrib for t in d.tiles]
-        ref = [a.ref for a in d.tiles]
-        apt = Apartment().from_indexes(idx, sizes)
-        print(apt, end=" ")
-        print(apt.indexes())
+        sizes = [t.size for t in apt.tiles]
+        # attributes = [t.attrib for t in d.tiles]
+        ref = [a.ref for a in apt.tiles]
+        apartment = Apartment().from_indexes(idx, sizes)
+        print(apartment)
+        print(apartment.indexes())
         print()
-        print(apt.raw())
-        for k, v in d.attrib.items():
+        # print(apt.raw())
+        for k, v in apt.attrib.items():
             print(k, "=", ", ".join(v))
-        for at in attributes:
-            print(at)
-        # print(attributes)
+        print(apt.tiles[0].attrib)
 
         print(ref)
 
         print()
         print("••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••")
         print()
+        pass
+
+    for d in data:
+        print_apt_dump(d)
     # for res in exactCoverResult:
 
     # apt = Apartment().from_indexes(res)

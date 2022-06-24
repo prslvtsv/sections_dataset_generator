@@ -19,15 +19,45 @@ from polyomino.tileset import Tileset
 from polyomino.problem import TilingProblem
 from gblock.elements.matrix import SpacialMatrix
 
+TEST_FLOOR = [
+    (0, 0),
+    (0, 1),
+    (0, 2),
+    (1, 0),
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (2, 0),
+    (2, 1),
+    (2, 2),
+    (2, 3),
+]
+
+TEST_APT = [
+    [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)],
+    [(0, 0), (0, 1), (0, 2), (1, 1), (1, 2)],
+    [(0, 0), (0, 1), (0, 2), (1, 2)],
+    [(0, 0), (0, 1), (0, 2)],
+    [(0, 0), (0, 1)],
+]
+
 
 def board_from_indexes(indexes):
     bnd = SpacialMatrix.bound_indexes(indexes)
     shp = SpacialMatrix.shape_from_bound(bnd)
-    checkIdx = []
     si, sj = shp
+
+    removed = []
+    checkIdx = []
+
     for i in range(si):
-        for j in range(sj):
-            checkIdx.append((i, j))
+        bnd = SpacialMatrix.bound_indexes(indexes)
+        shp = SpacialMatrix.shape_from_bound(bnd)
+        checkIdx = []
+        si, sj = shp
+        for i in range(si):
+            for j in range(sj):
+                checkIdx.append((i, j))
     cellsToRemove = list(set(checkIdx) ^ set(indexes))
     return Rectangle(shp[0], shp[1]).remove_all(cellsToRemove)
 
@@ -43,39 +73,27 @@ def compute_cover_problem(board, combinations):
     return [[1 if cell in comb else 0 for cell in board] for comb in combinations]
 
 
-def run_dlx_sim(board_idx, apt_sets):
+def run_dlx_sim(board_idx, apt_sets, index=False):
     board = board_from_indexes(board_idx)
     comb = compute_combinations(board, apt_sets)
     problem = compute_cover_problem(board.squares, comb)
     solution = [sorted(s) for s in dlx.solve(problem)]
 
+    if index:
+        cells = [[comb[t] for t in tiling] for tiling in solution]
+        indexes = solution
+        return cells, indexes
     return [[comb[t] for t in tiling] for tiling in solution]
 
 
+def solve_possible_tiling(board=TEST_FLOOR, apt_set=TEST_APT):
+    cells, idxGroups = run_dlx_sim(board, apt_set, True)
+    return cells, idxGroups
+
+
 def run_test():
-    test_board = [
-        (0, 0),
-        (0, 1),
-        (0, 2),
-        (1, 0),
-        (1, 1),
-        (1, 2),
-        (1, 3),
-        (2, 0),
-        (2, 1),
-        (2, 2),
-        (2, 3),
-    ]
 
-    test_aparts = [
-        [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)],
-        [(0, 0), (0, 1), (0, 2), (1, 1), (1, 2)],
-        [(0, 0), (0, 1), (0, 2), (1, 2)],
-        [(0, 0), (0, 1), (0, 2)],
-        [(0, 0), (0, 1)],
-    ]
-
-    aptLayouts = run_dlx_sim(test_board, test_aparts)
+    aptLayouts = run_dlx_sim(TEST_FLOOR, TEST_APT)
     # for s in aptLayouts:
     #     for t in s:
     #

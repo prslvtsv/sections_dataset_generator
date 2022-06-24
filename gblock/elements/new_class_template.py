@@ -145,20 +145,20 @@ class Layout(NestedObject):
         pass
 
 
-class Apartment(MatrixSlice):
-    def __init__(self, parent):
-        MatrixSlice.__init__(self)
-        pass
-
+# class Apartment(MatrixSlice):
+#     def __init__(self, parent):
+#         MatrixSlice.__init__(self)
+#         pass
+#
 
 # CommercialSpace(MatrixSlice)
 # PublicSpace(MatrixSlice)
 # EvacuationFacility(MatrixSlice)
 # VerticalLink(MatrixSlice)
 
-
-class Tile(MatrixCell, NestedObject):
-    pass
+#
+# class Tile(MatrixCell, NestedObject):
+#     pass
 
 
 class Side:
