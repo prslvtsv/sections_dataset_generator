@@ -76,12 +76,13 @@ def run_test():
     ]
 
     aptLayouts = run_dlx_sim(test_board, test_aparts)
-    for s in aptLayouts:
-        for t in s:
-
-            mtx = SpacialMatrix().from_indexes(t)
-            print(mtx)
-            print()
+    # for s in aptLayouts:
+    #     for t in s:
+    #
+    #         mtx = SpacialMatrix().from_indexes(t)
+    #         print(mtx)
+    #     print()
+    return aptLayouts
 
 
 def prepare_args():
