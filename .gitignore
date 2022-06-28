@@ -2,3 +2,5 @@
 *.3dmbak
 _ss
 *.log
+__pycache__
+.idea
