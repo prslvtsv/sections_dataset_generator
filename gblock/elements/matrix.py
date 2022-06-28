@@ -35,7 +35,7 @@ class MatrixCell(NestedObject):
 
     def __init__(self, pos, parent=None, enable=False):
         NestedObject.__init__(self, parent)
-        self.pos = pos
+        self.pos = pos  # (i, j) pos[0] - i, pos[1] - j
         self.data = None
         self.active = enable
         self.color = "⬛"
