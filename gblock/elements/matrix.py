@@ -139,6 +139,10 @@ class SpacialMatrix(AssemblyBlock):
     def shape(self):
         return (len(self.cells), len(self.cells[0]))
 
+    def cells_at(self, indexes):
+        for i, j in indexes:
+            yield self.cells[i][j]
+
     def clear_cell_data(self):
         for c in self._every_cell():
             c.clear_data()
@@ -165,6 +169,16 @@ class SpacialMatrix(AssemblyBlock):
         self.enable_cells_by_indexes(loc_idx)
         self.fill_by_indexes(loc_idx, data)
         return self
+
+    def from_coordinates(self, coords):
+        xx, yy = [p[0] * 100 for p in coords], [p[1] * 100 for p in coords]
+        unique_x = sorted(list(set([round(x) for x in xx])))
+        unique_y = sorted(list(set([round(y) for y in yy])))
+        i = [unique_x.index(round(xp)) for xp in xx]
+        j = [unique_y.index(round(yp)) for yp in yy]
+        indexes = list(zip(i, j))
+        # print indexes
+        return self.from_indexes(indexes, data=coords)
 
     def display_groups(self, groups):
         for g in groups:

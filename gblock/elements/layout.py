@@ -31,83 +31,62 @@ class FloorLayout(AssemblyBlock):
     def __init__(self, mtx=None, apt=None):
         AssemblyBlock.__init__(self)
         self.matrix = mtx
-        self.aptGroups = apt
-        self.dispPadding = (0, 0)
+        # floor spacial divisions as apartment objects
         self.spacediv = {}
+        # list of xyz
         self.origin = None
 
-    def from_matrix_tiling(self, matrix, group, origin):
+    def from_matrix_tiling(self, mtx_in, group_in, origin):
         # grass point3d to coord tuple)
         self.origin = list(origin)
+        self.matrix = SpacialMatrix().empty(mtx_in.shape())
         # assumed matrix contains at cell.data -> (polyline, state)
-        llu_gr = group[-1]
-        corr_gr = group[-2]
-        aparts = group[:-2]
-        flaten_idx = sum(group, [])
-        # print(llu_gr)
-        self.matrix = SpacialMatrix().empty(matrix.shape())
+        llu_gr = group_in[-1]
+        corr_gr = group_in[-2]
+        aparts_gr = group_in[:-2]
+        flaten_idx = sum(group_in, [])
 
-        llu = apartment.Apartment(parent=self).from_indexes(llu_gr)
-        llu.util = True
-        # print llu.active_indexes()
-        for gr in llu.active_cells():
-            i, j = gr.index(glob=True)
-            # print "glob llu", i, j
-            orig = matrix.cells[i][j]
-            tileCell = tile.Tile(instance=orig)
-            tileCell.parent = llu
-            # grass point3d list to coordinates
-            tileCell.outline = [[pt.X, pt.Y, pt.Z] for pt in orig.data[0]]
-            tileCell.attrib["state"] = orig.data[1]
-            ii, jj = gr.index()
-            llu.cells[ii][jj] = tileCell
-        self.spacediv["llu"] = [llu]
-
-        corr = apartment.Apartment(parent=self).from_indexes(corr_gr)
-        corr.util = True
-        for gr in corr.active_cells():
-            i, j = gr.index(glob=True)
-            orig = matrix.cells[i][j]
-            tileCell = tile.Tile(instance=orig)
-            tileCell.parent = corr
-            # grass point3d list to coordinates
-            tileCell.outline = [[pt.X, pt.Y, pt.Z] for pt in orig.data[0]]
-            tileCell.attrib["state"] = orig.data[1]
-            ii, jj = gr.index()
-            corr.cells[ii][jj] = tileCell
-        self.spacediv["corridor"] = [corr]
-
-        self.spacediv["apartment"] = []
-        for agr in aparts:
-            apt = apartment.Apartment(parent=self).from_indexes(agr)
-            for gr in apt.active_cells():
+        # space_group -- list of matrix indexes utility - true if belongs to non residential space groups
+        def space_from_group(space_group, mtx_in, utility=False):
+            space = apartment.Apartment(parent=self).from_indexes(space_group)
+            space.util = utility
+            for gr in space.active_cells():
                 i, j = gr.index(glob=True)
-                orig = matrix.cells[i][j]
+                # print "glob llu", i, j
+                orig = mtx_in.cells[i][j]
                 tileCell = tile.Tile(instance=orig)
-                tileCell.parent = apt
+                tileCell.parent = space
                 # grass point3d list to coordinates
                 tileCell.outline = [[pt.X, pt.Y, pt.Z] for pt in orig.data[0]]
                 tileCell.attrib["state"] = orig.data[1]
                 ii, jj = gr.index()
-                apt.cells[ii][jj] = tileCell
+                space.cells[ii][jj] = tileCell
+            return space
+
+        llu = space_from_group(llu_gr, mtx_in, True)
+        self.spacediv["llu"] = [llu]
+
+        corr = space_from_group(corr_gr, mtx_in, True)
+        self.spacediv["corridor"] = [corr]
+
+        self.spacediv["apartment"] = []
+        for apt_gr in aparts_gr:
+            apt = space_from_group(apt_gr, mtx_in)
             self.spacediv["apartment"].append(apt)
+
         return self
 
-    def apt_indexes(self):
-        return self.aptGroups
-
-    def display_coords(self):
-        return [
-            [(x + self.dispPadding[0], y + self.dispPadding[1]) for (x, y) in apt]
-            for apt in self.aptGroups
-        ]
-
     def relocate_to(self, location):
+        # translate vector, relative to origin point
         t = (
             location[0] - self.origin[0],
             location[1] - self.origin[1],
             location[2] - self.origin[2],
         )
+
+        self.origin[0] += t[0]
+        self.origin[1] += t[1]
+        self.origin[2] += t[2]
 
         for spdiv in self.spacediv:
             for apt in self.spacediv[spdiv]:
@@ -115,20 +94,19 @@ class FloorLayout(AssemblyBlock):
                     for j, jv in enumerate(apt.cells[i]):
                         if apt.cells[i][j].active:
                             for c, cv in enumerate(apt.cells[i][j].outline):
-                                # print "bef", apt.cells[i][j].outline[c][0]
                                 apt.cells[i][j].outline[c][0] += t[0]
-                                # print "aft", apt.cells[i][j].outline[c][0]
                                 apt.cells[i][j].outline[c][1] += t[1]
                                 apt.cells[i][j].outline[c][2] += t[2]
-                        # for i, v in enumerate(apt.cells[r][c].outline):
-                        #     print type(apt.cells[r][c].outline[i])
-                        #     apt.cells[r][c].outline[i].X += t[0]
-                        # apt.cells[r][c].outline[i] = (
-                        #     v[0] + t[0],
-                        #     v[1] + t[1],
-                        #     v[2] + t[2],
-                        # )
         return self
+
+    def get_apartments(self):
+        return self.spacediv["apartment"]
+
+    def get_corridor(self):
+        return self.spacediv["corridor"]
+
+    def get_llu(self):
+        return self.spacediv["llu"]
 
     def space_divisions(self):
         # print self.spacediv.values()

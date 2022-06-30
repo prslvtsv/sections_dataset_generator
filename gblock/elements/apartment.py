@@ -7,6 +7,7 @@ Created on 22 Jun 2022
 import os
 import sys
 import copy
+import math
 
 PROJECT_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
@@ -40,11 +41,29 @@ class Apartment(SpacialMatrix):
         self.clear_cell_data()
         return self
 
-    # @tiles.setter
-    # def tiles(self, tile):
-    #     self.
-    # def layout_pos(self):
-    #     return self.indexes(glob=True)
+    def tiles_outline(self):
+        return [cell.outline for cell in self.active_cells()]
+
+    def generate_outline(self):
+        def sh_str(fl):
+            n = str(math.trunc(round(fl * 100)))
+            if n not in "0":
+                n = ".".join([n[:-2], n[-2:]])
+            return n
+
+        tl = [
+            [(sh_str(x), sh_str(y), sh_str(z)) for (x, y, z) in cl.outline]
+            for cl in self.active_cells()
+        ]
+        # print tl
+        str_coords = set(sum(tl, []))
+        # print str_coords
+        coords = [((float(x), float(y), float(z))) for (x, y, z) in str_coords]
+        display_mtx = SpacialMatrix().from_coordinates(coords)
+        # print display_mtx.shape()
+        b_out, b_in = display_mtx.get_matrix_boundary_indeces()
+        # print [c.data for c in display_mtx.cells_at(b_out)]
+        return [c.data for c in display_mtx.cells_at(b_out)]
 
 
 class ApartmentTemplate(Apartment):
