@@ -20,7 +20,7 @@ Created on 15 Jun 2022
 """
 import os
 import sys
-
+import copy
 
 PROJECT_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
@@ -199,6 +199,163 @@ class SpacialMatrix(AssemblyBlock):
             col[i] = "".join([r[i] for r in rp])
         col.reverse()
         return "\n".join(col)
+
+    # GB addition
+    def count_active_neighbours(self, i, j):
+        count = 0
+        i_max, j_max = self.shape()
+        for m in range(-1, 2):
+            for n in range(-1, 2):
+                ii, jj = i + m, j + n
+                if ii >= i_max or ii == -1 or jj >= j_max or jj == -1:
+                    continue
+                neighbour = self.cells[ii][jj]
+                if neighbour.active and (m, n) != (0, 0):
+                    count += 1
+        return count
+
+    # GB addition
+    def deactivate_middle_cells(self):
+        cells = copy.deepcopy(self.cells)
+        for i, rows in enumerate(cells):
+            for j, cols in enumerate(rows):
+                if self.count_active_neighbours(i, j) == 8:
+                    cells[i][j] = MatrixCell((i, j), self)
+        self.no_middle_cells = cells
+        return self
+
+    # GB addition
+    def find_active_neighbour(self, i, j, prev=None):
+        def rule_1(i, j):
+            return True if self.no_middle_cells[i][j + 1].active else False
+
+        def rule_2(i, j):
+            return True if self.no_middle_cells[i + 1][j].active else False
+
+        def rule_3(i, j):
+            return True if self.no_middle_cells[i][j - 1].active else False
+
+        def rule_4(i, j):
+            return True if self.no_middle_cells[i - 1][j].active else False
+
+        i_max, j_max = self.shape()
+        i_max -= 1
+        j_max -= 1
+        if prev:
+            i_p, j_p = prev
+            prev_cond = [i - i_p, j - j_p]
+        else:
+            prev_cond = None
+        # print(prev_cond)
+
+        if (i, j) == (0, 0):
+            # print('cond_1')
+            if rule_1(i, j):
+                return i, j + 1
+            if rule_2(i, j):
+                return i + 1, j
+        elif (i, j) == (i_max, j_max):
+            # print('cond_2')
+            if rule_3(i, j):
+                return i, j - 1
+            if rule_4(i, j):
+                return i - 1, j
+        elif (i, j) == (0, j_max):
+            # print('cond_3')
+            if rule_2(i, j):
+                return i + 1, j
+            if rule_3(i, j):
+                return i, j - 1
+        elif (i, j) == (i_max, 0):
+            # print('cond_4')
+            if rule_4(i, j):
+                return i - 1, j
+            if rule_1(i, j):
+                return i, j + 1
+        elif i == i_max or (prev_cond == [-1, 0] and j != 0 and i != 0) == True:
+            # print('cond_5')
+            if rule_3(i, j):
+                return i, j - 1
+            if rule_4(i, j):
+                return i - 1, j
+            if rule_1(i, j):
+                return i, j + 1
+        elif j == j_max or (prev_cond == [0, -1] and j != 0 and i != 0) == True:
+            # print('cond_6')
+            if rule_2(i, j):
+                return i + 1, j
+            if rule_3(i, j):
+                return i, j - 1
+            if rule_4(i, j):
+                return i - 1, j
+        elif i == 0 or (prev_cond == [1, 0] and j != j_max and i != i_max) == True:
+            # print('cond_7')
+            if rule_1(i, j):
+                return i, j + 1
+            if rule_2(i, j):
+                return i + 1, j
+            if rule_3(i, j):
+                return i, j - 1
+        elif j == 0 or (prev_cond == [0, 1] and i != 0 and j != j_max) == True:
+            # print('cond_8')
+            if rule_4(i, j):
+                return i - 1, j
+            if rule_1(i, j):
+                return i, j + 1
+            if rule_2(i, j):
+                return i + 1, j
+        else:
+            # print('cond_9')
+            if rule_1(i, j):
+                return i, j + 1
+            if rule_2(i, j):
+                return i + 1, j
+            if rule_3(i, j):
+                return i, j - 1
+            if rule_4(i, j):
+                return i - 1, j
+        # print('no match')
+        return i, j + 1
+
+    # GB addition
+    def find_matrix_boundary_indeces(self, i=None, j=None):
+        if i == None and j == None:
+            (i, j) = (0, 0)
+        if not self.no_middle_cells[i][j].active:
+            m = self.find_active_neighbour(i, j)
+            while self.no_middle_cells[i][j].display() == "⬜":
+                i, j = m
+                m = self.find_active_neighbour(i, j)
+            i, j = m
+        res = [(i, j)]
+        i_, j_ = i, j
+        n = self.find_active_neighbour(i_, j_)
+        while n != res[0]:
+            prev_pos = res[-1]
+            res.append(n)
+            self.no_middle_cells[n[0]][n[1]] = MatrixCell((n[0], n[1]), self)
+            # for i in self.no_middle_cells:
+            #     print(i)
+            i_, j_ = n
+            n = self.find_active_neighbour(i_, j_, prev_pos)
+        self.no_middle_cells[n[0]][n[1]] = MatrixCell((n[0], n[1]), self)
+        return res
+
+    # GB addition
+    def get_matrix_boundary_indeces(self):
+        self.deactivate_middle_cells()
+        exterior_boundary = self.find_matrix_boundary_indeces()
+        interior_boundary = []
+
+        # print('no middle matrix:')
+        # for i in self.no_middle_cells:
+        #     print(i)
+
+        for i, ii in enumerate(self.no_middle_cells):
+            for j, jj in enumerate(ii):
+                if jj.active:
+                    interior_boundary = self.find_matrix_boundary_indeces(i, j)
+        return exterior_boundary, interior_boundary
 
     def __repr__(self):
         rp = [[c.__repr__() for c in a] for a in self._rows()]

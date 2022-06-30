@@ -115,9 +115,9 @@ class FloorLayout(AssemblyBlock):
                     for j, jv in enumerate(apt.cells[i]):
                         if apt.cells[i][j].active:
                             for c, cv in enumerate(apt.cells[i][j].outline):
-                                print "bef", apt.cells[i][j].outline[c][0]
+                                # print "bef", apt.cells[i][j].outline[c][0]
                                 apt.cells[i][j].outline[c][0] += t[0]
-                                print "aft", apt.cells[i][j].outline[c][0]
+                                # print "aft", apt.cells[i][j].outline[c][0]
                                 apt.cells[i][j].outline[c][1] += t[1]
                                 apt.cells[i][j].outline[c][2] += t[2]
                         # for i, v in enumerate(apt.cells[r][c].outline):
