@@ -18,8 +18,10 @@ from collections import OrderedDict
 
 
 class Apartment(SpacialMatrix):
-    def __init__(self, padding=(0, 0)):
+    def __init__(self, padding=(0, 0), parent=None):
         SpacialMatrix.__init__(self, padding)
+        self.util = False
+        self.parent = parent
         self.attrib = OrderedDict()
 
     @property

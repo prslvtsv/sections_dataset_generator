@@ -14,16 +14,21 @@ from elements.matrix import MatrixCell
 
 
 class Tile(MatrixCell):
-    def __init__(self, pos, parent, enable=False):
-        MatrixCell.__init__(self, pos, parent, enable)
+    def __init__(self, pos=None, parent=None, enable=False, instance=None):
+        if instance is None:
+            MatrixCell.__init__(self, pos, parent, enable)
+        else:
+            self._init_from_instance(instance)
+
         self.attrib = {}
         self.outline = None
         self.size = (3.3, 6.4)
         self.window = None
         self.door = None
+        # self.defCrv = None
 
-    # def set_attributes(self, attrib):
-    #     self.attrib = atrib
+    def _init_from_instance(self, obj):
+        MatrixCell.__init__(self, obj.pos[:], obj.parent, obj.active)
 
 
 class TileDump:
