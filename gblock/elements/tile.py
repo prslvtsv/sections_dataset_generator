@@ -30,6 +30,8 @@ class Tile(MatrixCell):
     def _init_from_instance(self, obj):
         MatrixCell.__init__(self, obj.pos[:], obj.parent, obj.active)
 
+    # def relocate_geometry(self, ref):
+
 
 class TileDump:
     def __init__(self):
