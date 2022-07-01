@@ -24,6 +24,7 @@ class Apartment(SpacialMatrix):
         self.util = False
         self.parent = parent
         self.attrib = OrderedDict()
+        self.spaceType = "residential"
 
     @property
     def tiles(self):

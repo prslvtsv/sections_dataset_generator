@@ -47,15 +47,18 @@ class FloorLayout(AssemblyBlock):
         flaten_idx = sum(group_in, [])
 
         # space_group -- list of matrix indexes utility - true if belongs to non residential space groups
-        def space_from_group(space_group, mtx_in, utility=False):
+        def space_from_group(space_group, mtx_in, sptype, utility=False):
             space = apartment.Apartment(parent=self).from_indexes(space_group)
             space.util = utility
+            # print " pad ", space.padding
             for gr in space.active_cells():
                 i, j = gr.index(glob=True)
                 # print "glob llu", i, j
                 orig = mtx_in.cells[i][j]
-                tileCell = tile.Tile(instance=orig)
-                tileCell.parent = space
+                tileCell = tile.Tile(pos=gr.index(), instance=orig, parent=space)
+                # tileCell.parent = space
+                tileCell.pos = gr.pos
+                tileCell.spaceType = sptype
                 # grass point3d list to coordinates
                 tileCell.outline = [[pt.X, pt.Y, pt.Z] for pt in orig.data[0]]
                 tileCell.attrib["state"] = orig.data[1]
@@ -63,16 +66,28 @@ class FloorLayout(AssemblyBlock):
                 space.cells[ii][jj] = tileCell
             return space
 
-        llu = space_from_group(llu_gr, mtx_in, True)
+        llu = space_from_group(llu_gr, mtx_in, "llu", True)
         self.spacediv["llu"] = [llu]
 
-        corr = space_from_group(corr_gr, mtx_in, True)
+        corr = space_from_group(corr_gr, mtx_in, "corridor", True)
         self.spacediv["corridor"] = [corr]
 
         self.spacediv["apartment"] = []
         for apt_gr in aparts_gr:
-            apt = space_from_group(apt_gr, mtx_in)
+            apt = space_from_group(apt_gr, mtx_in, "residential")
             self.spacediv["apartment"].append(apt)
+
+        # update floor layout matrix with new appartment tiles
+
+        for k, v in self.spacediv.items():
+            for a, apart in enumerate(self.spacediv[k]):
+                # print apart.active_indexes()
+                for tl in self.spacediv[k][a].active_cells():
+                    # print "parent", tl.parent.padding
+                    i, j = tl.index()
+                    gi, gj = tl.index(glob=True)
+                    # print i, j, " ", gi, gj
+                    self.matrix.cells[gi][gj] = self.spacediv[k][a].cells[i][j]
 
         return self
 

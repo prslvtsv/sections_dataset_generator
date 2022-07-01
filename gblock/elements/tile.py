@@ -18,7 +18,7 @@ class Tile(MatrixCell):
         if instance is None:
             MatrixCell.__init__(self, pos, parent, enable)
         else:
-            self._init_from_instance(instance)
+            self._init_from_instance(pos, instance, parent)
 
         self.attrib = {}
         self.outline = None
@@ -27,8 +27,8 @@ class Tile(MatrixCell):
         self.door = None
         # self.defCrv = None
 
-    def _init_from_instance(self, obj):
-        MatrixCell.__init__(self, obj.pos[:], obj.parent, obj.active)
+    def _init_from_instance(self, pos, obj, apt):
+        MatrixCell.__init__(self, pos, apt, obj.active)
 
     # def relocate_geometry(self, ref):
 
