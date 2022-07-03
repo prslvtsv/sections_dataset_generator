@@ -24,36 +24,40 @@ import time
 
 class AppriserBase:
     def __init__(self, target):
-        self.target = target
+        self._target = target
 
 
 class LayoutAppriser(AppriserBase):
     def __init__(self, target):
         AppriserBase.__init__(self, target)
-        self.eval_prec = 6
-        self.disp_prec = 4
-        self.aptratio = ApartmentRatio(prec=self.eval_prec)
-        self.size = None
+        self._eval_prec = 6
+        self._disp_prec = 4
+        self._aptratio = ApartmentRatio(prec=self._eval_prec)
+        self._size = None
 
     def eval_apart_ratio(self):
-        aparts = self.target.get_apartments()
+        aparts = self._target.get_apartments()
         bedrooms = [apt.bedrooms for apt in aparts]
-        self.aptratio.evaluate(bedrooms)
+        self._aptratio.evaluate(bedrooms)
 
     def aprt(self, mode="obj"):
-        if mode.startswith("."):
+        # return object itself by default
+        if mode in "obj":
+            return self._aptratio
+
+        elif mode.startswith("."):
             if len(mode) < 2:
-                prec = self.disp_prec
+                prec = self._disp_prec
             else:
                 prec = len(mode) - 1
-            return self.aptratio.print_ratio(prec=prec)
+            return self._aptratio.print_ratio(prec=prec)
         elif mode in "%":
-            return self.aptratio.print_percent()
-        elif mode in "obj":
-            return self.aptratio
+            return self._aptratio.print_percent()
+        elif mode in "bednum":
+            return self._aptratio.print_beds()
 
-    def match_ratio_tollerance(self, vals, toll):
-        return self.aptratio.match_tollerance(vals, toll)
+    def aprt_match(self, vals, tol=0.1):
+        return self._aptratio.match_ratio(vals, tol)
 
     # call after floorLayout fully created
     def apprise(self):
@@ -65,8 +69,9 @@ class LayoutAppriser(AppriserBase):
 # Evaluation modules below
 ####################################################################
 class EvalBase:
-    def __init__(self, bands, name="b", precision=4):
+    def __init__(self, bands, name="b", printname="base", precision=4):
         self.evname = name
+        self.printname = printname
         # evaluation band names
         self._bands = bands
         # keeped as float
@@ -83,10 +88,8 @@ class EvalBase:
         return [f2f(v, self.pr) for v in self._values.values()]
 
     def valstr(self, prec=None, altval=None):
-        if not altval:
-            altval = self.val
-        if not prec:
-            prec = self.pr
+        altval = self.val if altval is None else altval
+        prec = self.pr if prec is None else prec
         return [f2s(v, prec) for v in altval]
 
     def setval(self, name, val):
@@ -114,26 +117,33 @@ class EvalBase:
             chaincall(self)
         return self
 
-    def for_print(self, altval=None, nonzero=True, prec=None):
+    def for_print(self, altval=None, nonzero=True, prec=None, label=True, endchar=""):
         if prec is None:
+            # print("prec none")
             prec = self.pr
-        if not altval:
-            altval = self.valstr(altval=altval, prec=prec)
+        altval = self.valstr(altval=altval, prec=prec)
+
         bands = self._bands.keys()
-        longest = max([len(k) for k in bands])
-        # pad band names with spaces
-        bands = [b.ljust(longest - len(b), " ") for b in bands]
-        vals = zip(bands, altval)
+        lb = max([len(k) for k in bands])
+        lv = max([len(k) for k in altval])
+        padbands = [b.ljust(lb, " ") for b in bands]
+        nonz = [f2s(v, self.pr) != f2s(0, self.pr) for v in altval]
+        vals = zip(padbands, altval)
 
         if nonzero:
-            vals = [v for v in vals if f2s(v[1], self.pr) != f2s(0, self.pr)]
-        return "\n".join([": ".join([n, f2s(v, prec)]) for n, v in vals])
+            vals = zip(padbands, altval, nonz)
+            vals = [[b, v.rjust(lv, " ")] for (b, v, z) in vals if z]
+        # print("".join([": ".join([n, v]), endchar]))
+        pv = ["".join([": ".join([n, v]), endchar]) for (n, v) in vals]
+        if label:
+            return "\n".join(sum([[self.printname], pv], []))
+        return "\n".join(pv)
 
     def __repr__(self):
         vals = self.valstr(2)
         if not sum([int(v[0]) for v in vals]):
             vals = [v[1:] for v in vals]
-        return "".join(["|", self.evname, "|", " ".join(vals), "| "])
+        return "".join(["|", self.evname, "|", " ".join(vals), "|"])
 
     # def __str__(self):
     #     vals = zip(self._bands.keys(), self.values_str)
@@ -146,6 +156,7 @@ class LayoutSize(EvalBase):
             prec = 2
         b = ["x", "y", "midlen", "loglen", "faclen", "wid"]
         bands = OrderedDict(zip(b, range(len(b))))
+        printname = "Layout dimensions:"
         EvalBase.__init__(self, bands, "sz", prec)
         self.reset()
 
@@ -156,12 +167,13 @@ class ApartmentRatio(EvalBase):
     def __init__(self, prec=6):
         if prec <= 1:
             prec = 2
-        EvalBase.__init__(self, ApartmentRatio.bands, "a%", prec)
+        printname = "Apartment distribution ratios:"
+        EvalBase.__init__(self, ApartmentRatio.bands, "a%", printname, prec)
         self.reset(chaincall=self._postreset())
 
     def _postreset(self):
         # print("postreset")
-        self.bedsCount = OrderedDict()
+        self.bedsCount = OrderedDict(zip(self._bands.keys(), self._values.values()))
 
     def evaluate(self, bedrooms):
         self.reset(chaincall=self._postreset())
@@ -172,10 +184,11 @@ class ApartmentRatio(EvalBase):
         for bd in set(bedrooms):
             count[bd] = bedrooms.count(bd)
         # print "count", count
-        self.bedsCount = count
+        # self.bedsCount = count
         m = OrderedDict([(vv, kk) for kk, vv in self._bands.items()])
         for k, v in count.items():
             self.setval(m[k], f2f(float(v) / total))
+            self.bedsCount[m[k]] = v
         # print(sum(self.val))
         itr = 5
         while not self.balance_total() and itr > 0:
@@ -184,7 +197,7 @@ class ApartmentRatio(EvalBase):
 
     def from_ratios(self, st=0, b1=0, b2=0, b3=0, b4=0, balance=False, ratios=None):
         if ratios is None:
-            ratios = [st, b1, b2, b3, b3]
+            ratios = [st, b1, b2, b3, b4]
             self.setvals(ratios)
         else:
             if (len(self._values.keys()) - len(ratios)) != 0:
@@ -234,67 +247,93 @@ class ApartmentRatio(EvalBase):
     def print_percent(self, prec=2):
         if prec < 2:
             prec = 2
-        val = [f2f(float(v * 100), prec) for v in self.val]
-        frmt = self.for_print(altval=val, prec=prec).splitlines()
-        return "\n".join(["".join([s, " %"]) for s in frmt])
+        val = [f2s(float(v * 100), prec) for v in self.val]
+        return self.for_print(altval=val, prec=prec, endchar=" %")
 
-    def match_ratio(self, other, tolerance=None):
+    def match_ratio(self, other, tolerance=None, nonzero=True):
         if tolerance is None:
             tolerance = f2f(0.02, 2)
         vv = [f2f(self._values[k], self.pr) for k in other.keys()]
         ov = [f2f(other[k], self.pr) for k in other.keys()]
 
+        # tests only non zero items in both sets
+        # can be used to filter by exactly ONE or FEW ratios among others
+        if nonzero:
+            vv = [v for v in vv if v != 0.0]
+            ov = [v for v in ov if v != 0.0]
         pairs = list(zip(vv, ov))
         delta = [abs(a - b) for (a, b) in pairs]
-        print([d <= tolerance for d in delta])
+        # print([d <= tolerance for d in delta])
         match = all([d <= tolerance for d in delta])
+        # print(match)
         return match
 
 
-if __name__ == "__main__":
-    # start = time.process_time_ns()
-    # print(time.time())
-    # bedrooms = [1, 1, 2, 3, 3, 3, 3, 4, 4, 4, 4]
-    bedrooms = [1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4]
-    # bedrooms = [1, 1, 2, 3, 3]
-    fl = OrderedDict([("b3", 0.4), ("b2", 0.23)])
-    ft = [0, 0, 0.2, 0.4]
-    # def eval_apart_ratio(self):
-    #     aparts = self.target.get_apartments()
-    #     bedrooms = [apt.bedrooms for apt in aparts]
-    #     self.aptratio.evaluate(bedrooms)
+def test_appriser():
+
+    beda = [1, 1, 2, 3, 3, 3, 3, 4, 4, 4, 4]
+    bedb = [1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4]
+    bedc = [1, 1, 2, 3, 3]
+    rata = OrderedDict([("b1", 0.2), ("b3", 0.3)])
+    ratb = [0, 0, 0.2, 0.4]
+
     class TAPT:
         def __init__(self, b):
             self.bedrooms = b
 
     class TFL:
-        def __init__(self):
+        def __init__(self, bdr):
             self.aprts = []
-            bdr = [1, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4]
             for b in bdr:
                 self.aprts.append(TAPT(b))
 
         def get_apartments(self):
             return self.aprts
 
-    test_layout = TFL()
-    tla = LayoutAppriser(target=test_layout).apprise()
-    print(tla.aprt())
-    print(tla.aprt("."))
+    layout_apprisers = []
+    tlys = [TFL(beda), TFL(bedb), TFL(bedc)]
+    tapprs = []
+    for t in tlys:
+        a = LayoutAppriser(target=t).apprise()
+        tapprs.append(a)
+    for a in tapprs:
 
-    # print(time.time())
-    # print(time.process_time_ns() - start)
-    # ar = ApartmentRatio(prec=4)
-    # ar.evaluate(bedrooms)
+        print(a.aprt())
+        print(a.aprt("."))
+        print(a.aprt("%"))
+        print(a.aprt("bednum"))
+        print("------------------")
+        pass
+    ar = ApartmentRatio(prec=4)
+    ar.evaluate(beda)
+    # print(beda)
+    print(ar)
+    print(ar.print_ratio())
+    print(ar.print_percent())
+    print(ar.print_beds())
+    # print("------------------")
 
-    # ApartmentRatio.balance_bands(ft)
-    # print(ar)
-    # print(ar.print_ratio())
-    # print(ar.print_percent())
-    # print(ar.print_beds())
-    # print(ar.match_ratio(fl, 0.1))
-    # pr = ApartmentRatio().from_ratios(ratios=fl)
-    # print(pr.print_ratio(2))
-    # print(ApartmentRatio().from_ratios(ratios=ft).print_ratio())
-    # print(ar.for_print_beds())
-    # print(ar.val_beds())
+    # pra = ApartmentRatio().from_ratios(ratios=rata)
+    # prb = ApartmentRatio().from_ratios(ratios=ratb)
+    # prc = ApartmentRatio().from_ratios(b4=0.2700)
+    # ma = " ".join([str(appr.aprt_match(pra._values, 0.2))[:1] for appr in tapprs])
+    # mb = " ".join([str(appr.aprt_match(prb._values, 0.4))[:1] for appr in tapprs])
+    # mc = [appr.aprt() for appr in tapprs if appr.aprt_match(prc._values, 0.01)]
+    # print(ma)
+    # print(mb)
+    # print(mc)
+
+    # # print([True for appr in tapprs if appr.aprt_match(prb._values, 0.5)])
+    # # print([appr for appr in tapprs if appr.aprt_match(prb._values)])
+    # print(pra.print_ratio(2))
+    # print(".")
+    # print(prb.print_ratio(4))
+    # print(" ")
+
+
+if __name__ == "__main__":
+    start = time.process_time()
+    for i in range(1):
+        test_appriser()
+    print(" ")
+    print("processed sec ", time.process_time() - start)
