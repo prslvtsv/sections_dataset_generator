@@ -139,10 +139,10 @@ class Floor(FunctionalElement):
         pass
 
 
-class Layout(NestedObject):
-    def __init__(self, parent=None):
-        NestedObject.__init__(self, parent)
-        pass
+# class Layout(NestedObject):
+#     def __init__(self, parent=None):
+#         NestedObject.__init__(self, parent)
+#         pass
 
 
 # class Apartment(MatrixSlice):

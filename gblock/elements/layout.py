@@ -7,6 +7,7 @@ Created on 15 Jun 2022
 import os
 import sys
 import copy
+import math
 
 PROJECT_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
@@ -15,26 +16,24 @@ sys.path.append(PROJECT_ROOT)
 
 from gblock.elements.gtypes import NestedObject, AssemblyBlock
 from gblock.elements.matrix import SpacialMatrix
-from gblock.elements import tile, apartment
+from gblock.elements import tile, apartment, appriser
+from gblock.utils.utils import f2s, f2f
 
 reload(tile)
 reload(apartment)
-# reload(gblock.elements.tile)
-# from gblock.elements.tile import Tile
-
-# reload(Tile)
-# reload(SpacialMatrix)
-# reload(Apartment)
+reload(appriser)
 
 
 class FloorLayout(AssemblyBlock):
-    def __init__(self, mtx=None, apt=None):
-        AssemblyBlock.__init__(self)
+    def __init__(self, mtx=None, apt=None, parent=None):
+        AssemblyBlock.__init__(self, parent)
+        self.typename = "FloorLayout"
         self.matrix = mtx
         # floor spacial divisions as apartment objects
         self.spacediv = {}
         # list of xyz
         self.origin = None
+        self.metrics = appriser.LayoutAppriser(self)
 
     def from_matrix_tiling(self, mtx_in, group_in, origin):
         # grass point3d to coord tuple)
@@ -50,20 +49,27 @@ class FloorLayout(AssemblyBlock):
         def space_from_group(space_group, mtx_in, sptype, utility=False):
             space = apartment.Apartment(parent=self).from_indexes(space_group)
             space.util = utility
-            # print " pad ", space.padding
+            space.bedrooms = -1
             for gr in space.active_cells():
                 i, j = gr.index(glob=True)
-                # print "glob llu", i, j
                 orig = mtx_in.cells[i][j]
                 tileCell = tile.Tile(pos=gr.index(), instance=orig, parent=space)
                 # tileCell.parent = space
-                tileCell.pos = gr.pos
+                # tileCell.pos = gr.pos
                 tileCell.spaceType = sptype
                 # grass point3d list to coordinates
                 tileCell.outline = [[pt.X, pt.Y, pt.Z] for pt in orig.data[0]]
                 tileCell.attrib["state"] = orig.data[1]
+
+                # if tileCell.attrib["state"] not in ("llu", "corridor"):
+                space.bedrooms += 1
                 ii, jj = gr.index()
+                if ii == 0 and jj == 1:
+                    tileCell.wc = True
+                else:
+                    tileCell.wc = False
                 space.cells[ii][jj] = tileCell
+
             return space
 
         llu = space_from_group(llu_gr, mtx_in, "llu", True)
@@ -81,14 +87,13 @@ class FloorLayout(AssemblyBlock):
 
         for k, v in self.spacediv.items():
             for a, apart in enumerate(self.spacediv[k]):
-                # print apart.active_indexes()
                 for tl in self.spacediv[k][a].active_cells():
-                    # print "parent", tl.parent.padding
                     i, j = tl.index()
                     gi, gj = tl.index(glob=True)
-                    # print i, j, " ", gi, gj
                     self.matrix.cells[gi][gj] = self.spacediv[k][a].cells[i][j]
 
+        # evaluate apartments ratio
+        self.metrics.eval_apart_ratio()
         return self
 
     def relocate_to(self, location):
@@ -123,6 +128,21 @@ class FloorLayout(AssemblyBlock):
     def get_llu(self):
         return self.spacediv["llu"]
 
-    def space_divisions(self):
-        # print self.spacediv.values()
-        return sum(self.spacediv.values(), [])
+    def get_wc_tiles(self):
+        apt = self.get_apartments()
+        crv = [c.outline for c in apt.active_cells() if c.wc]
+        return crv
+
+    def get_xy_size(self):
+        tl = [cell.outline_xyz(as_str=True) for cell in self.matrix.active_cells()]
+        str_coords = set(sum(tl, []))
+        crd_x = [float(x) for (x, y, z) in str_coords]
+        crd_y = [float(y) for (x, y, z) in str_coords]
+        bnd_x = abs(max(crd_x) - min(crd_x))
+        bnd_y = abs(max(crd_y) - min(crd_y))
+        print bnd_x, bnd_y
+        return (bnd_x, bnd_y)
+
+    # def space_divisions(self):
+    #     # print self.spacediv.values()
+    #     return sum(self.spacediv.values(), [])

@@ -21,26 +21,28 @@ from collections import OrderedDict
 class Apartment(SpacialMatrix):
     def __init__(self, padding=(0, 0), parent=None):
         SpacialMatrix.__init__(self, padding)
+        self.typename = "Apartment"
         self.util = False
         self.parent = parent
         self.attrib = OrderedDict()
         self.spaceType = "residential"
+        self.bedrooms = 0
 
     @property
     def tiles(self):
         return self.cells
 
-    def from_tiles(self, tiles):
-        indexes = [t.index(glob=True) for t in tiles]
-        data = []
-        # print(indexes)
-        self.from_indexes(indexes, data)
-        # print(self.raw())
-        tileMatrix = copy.deepcopy(self.raw())
-        # print(tileMatrix)
-        self.cells = tileMatrix
-        self.clear_cell_data()
-        return self
+    # def from_tiles(self, tiles):
+    #     indexes = [t.index(glob=True) for t in tiles]
+    #     data = []
+    #     # print(indexes)
+    #     self.from_indexes(indexes, data)
+    #     # print(self.raw())
+    #     tileMatrix = copy.deepcopy(self.raw())
+    #     # print(tileMatrix)
+    #     self.cells = tileMatrix
+    #     self.clear_cell_data()
+    #     return self
 
     def tiles_outline(self):
         return [cell.outline for cell in self.active_cells()]
@@ -70,6 +72,7 @@ class Apartment(SpacialMatrix):
 class ApartmentTemplate(Apartment):
     def __init__(self):
         Apartment.__init__(self)
+        self.typename = "ApartmentTemplate"
 
 
 class ApartmentDump:
