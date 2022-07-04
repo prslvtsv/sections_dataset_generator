@@ -10,6 +10,7 @@ class NestedObject(object):
     """Simple class hangling owner objects logic, assist in fast object cross ref"""
 
     def __init__(self, parent, child=None):
+        self.typename = "NestedObject"
         self.parent = parent
         self.child = child
 
@@ -42,23 +43,7 @@ class AssemblyBlock(NestedObject, AttribAddress):
         # add property -> metrics = Appriser
         # add other functional blocks
 
-    def devTest(self):
-        print("self {} {}".format(self.typename, self))
-        print("parent {} {}".format(self.parent.typename, self.parent))
-
-
-# test piece
-class Piece(AssemblyBlock):
-    def __init__(self, parent=None):
-        AssemblyBlock.__init__(self, parent)
-        self.typename = "piece"
-
 
 if __name__ == "__main__":
     # used only for dev tests
-    pobj = AssemblyBlock()
-    chobj = Piece(pobj)
-    cchobj = Piece(chobj)
-
-    chobj.devTest()
-    cchobj.devTest()
+    pass

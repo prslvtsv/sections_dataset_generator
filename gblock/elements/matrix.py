@@ -35,7 +35,9 @@ class MatrixCell(NestedObject):
 
     def __init__(self, pos, parent=None, enable=False):
         NestedObject.__init__(self, parent)
+        self.typename = "MatrixCell"
         self.pos = pos  # (i, j) pos[0] - i, pos[1] - j
+        # data used as a helper container for various processes in pipeline
         self.data = None
         self.active = enable
         self.color = "⬛"
@@ -44,7 +46,6 @@ class MatrixCell(NestedObject):
 
     def _glob(self):
         if not self.parent is None:
-            # print(self.pos, self.pp)
             return (self.pos[0] + self.pp[0], self.pos[1] + self.pp[1])
         return self.index()
 
@@ -61,19 +62,6 @@ class MatrixCell(NestedObject):
         # return "⬛" if self.active else "⬛"
 
     def __repr__(self):
-        # return "⚫" if self.active else "⚪"
-        # if self.parent.count_active() == 2:
-        #     return "🟨" if self.active else "⬛"
-        # if self.parent.count_active() == 3:
-        #     return "🟧" if self.active else "⬛"
-        # if self.parent.count_active() == 4:
-        #     return "🟥" if self.active else "⬛"
-        # if self.parent.count_active() == 5:
-        #     return "🟪" if self.active else "⬛"
-        # if self.parent.count_active() == 6:
-        #     return "🟦" if self.active else "⬛"
-        # if self.parent.count_active() == 6:
-        #     return "🟩" if self.active else "⬛"
         return "⬛" if self.active else "⬜"
         # return "⬜" if self.active else "⬛"
 
@@ -83,7 +71,7 @@ class SpacialMatrix(AssemblyBlock):
 
     def __init__(self, padding=(0, 0)):
         AssemblyBlock.__init__(self)
-        # self.shape = shape
+        self.typename = "SpacialMatrix"
         self.cells = []
         self.padding = padding
         self.colors = ("⬜", "⬛", "🟨", "🟦", "🟧", "🟪", "🟥", "🟩")
@@ -180,39 +168,39 @@ class SpacialMatrix(AssemblyBlock):
         # print indexes
         return self.from_indexes(indexes, data=coords)
 
-    def display_groups(self, groups):
-        for g in groups:
-            s = int(round(len(g) / 2))
-            if s >= len(self.colors):
-                char = self.colors[0]
-            else:
-                char = self.colors[s]
-            for i, j in g:
-                self.cells[i][j].color = char
+    # def display_groups(self, groups):
+    #     for g in groups:
+    #         s = int(round(len(g) / 2))
+    #         if s >= len(self.colors):
+    #             char = self.colors[0]
+    #         else:
+    #             char = self.colors[s]
+    #         for i, j in g:
+    #             self.cells[i][j].color = char
+    #
+    #     rp = [[c.display(char) for c in a] for a in self._rows()]
+    #     col = []
+    #     for i in range(len(rp[0])):
+    #         col.append([])
+    #     for i in range(len(col)):
+    #         col[i] = "".join([r[i] for r in rp])
+    #     col.reverse()
+    #     return "\n".join(col)
 
-        rp = [[c.display(char) for c in a] for a in self._rows()]
-        col = []
-        for i in range(len(rp[0])):
-            col.append([])
-        for i in range(len(col)):
-            col[i] = "".join([r[i] for r in rp])
-        col.reverse()
-        return "\n".join(col)
-
-    def display(self):
-        s = self.count_active()
-        if s >= len(self.colors):
-            char = self.colors[0]
-        else:
-            char = self.colors[s]
-        rp = [[c.display(char) for c in a] for a in self._rows()]
-        col = []
-        for i in range(len(rp[0])):
-            col.append([])
-        for i in range(len(col)):
-            col[i] = "".join([r[i] for r in rp])
-        col.reverse()
-        return "\n".join(col)
+    # def display(self):
+    #     s = self.count_active()
+    #     if s >= len(self.colors):
+    #         char = self.colors[0]
+    #     else:
+    #         char = self.colors[s]
+    #     rp = [[c.display(char) for c in a] for a in self._rows()]
+    #     col = []
+    #     for i in range(len(rp[0])):
+    #         col.append([])
+    #     for i in range(len(col)):
+    #         col[i] = "".join([r[i] for r in rp])
+    #     col.reverse()
+    #     return "\n".join(col)
 
     # GB addition
     def count_active_neighbours(self, i, j):

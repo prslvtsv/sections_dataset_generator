@@ -7,10 +7,12 @@ Created on 22 Jun 2022
 import os
 import sys
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-sys.path.append(PROJECT_ROOT)
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+)
 
-from elements.matrix import MatrixCell
+from glock.elements.matrix import MatrixCell
+from gblock.utils.utils import f2s, f2f
 
 
 class Tile(MatrixCell):
@@ -19,18 +21,24 @@ class Tile(MatrixCell):
             MatrixCell.__init__(self, pos, parent, enable)
         else:
             self._init_from_instance(pos, instance, parent)
-
+        self.typename = "Tile"
         self.attrib = {}
         self.outline = None
         self.size = (3.3, 6.4)
         self.window = None
         self.door = None
-        # self.defCrv = None
 
     def _init_from_instance(self, pos, obj, apt):
         MatrixCell.__init__(self, pos, apt, obj.active)
 
-    # def relocate_geometry(self, ref):
+    def outline_xyz(self, as_str=False, closed=False):
+        res = None
+        if as_str:
+            res = [(f2s(x), f2s(y), f2s(z)) for (x, y, z) in self.outline]
+        else:
+            res = [(f2f(x), f2f(y), f2f(z)) for (x, y, z) in self.outline]
+
+        return res if closed else res[:-1]
 
 
 class TileDump:
