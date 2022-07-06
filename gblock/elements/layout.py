@@ -59,29 +59,28 @@ class FloorLayout(AssemblyBlock):
             )
             space.util = utility
             space.bedrooms = -1
-            # print(" ")
-            # print(space.parent.typename)
             for gr in space.active_cells():
                 i, j = gr.index(glob=True)
-                # print(i, j)
+
                 orig = mtx_in.cells[i][j]
                 tileCell = tile.Tile(pos=gr.index(), instance=orig, parent=space)
-                # tileCell.parent = space
-                # tileCell.pos = gr.pos
+
                 tileCell.spaceType = sptype
-                # grass point3d list to coordinates
+
                 tileCell.outline = [XYZ(pt.X, pt.Y, pt.Z) for pt in orig.data[0]]
                 tileCell.attrib["state"] = orig.data[1]
 
-                # if tileCell.attrib["state"] not in ("llu", "corridor"):
+                # change later, just sample
                 space.bedrooms += 1
                 ii, jj = gr.index()
-                # print("ii jj", ii, jj)
 
+                # change later, just sample
                 if ii == 0 and jj == 0 and not utility:
                     tileCell.attrib["wc"] = True
                 else:
                     tileCell.attrib["wc"] = False
+
+                # finally assign new tile cell to space cells
                 space.cells[ii][jj] = tileCell
             return space
 

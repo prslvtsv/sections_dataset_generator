@@ -4,12 +4,8 @@ Created on 01 Jul 2022
 
 @author: prslvtsv
 """
-
 import os
 import sys
-
-# import math
-# import decimal as dec
 
 PROJECT_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)

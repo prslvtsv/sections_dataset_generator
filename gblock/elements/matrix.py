@@ -241,16 +241,16 @@ class SpacialMatrix(AssemblyBlock):
     # GB addition
     def find_active_neighbour(self, i, j, prev=None):
         def rule_1(i, j):
-            return True if self.no_middle_cells[i][j + 1].active else False
+            return self.no_middle_cells[i][j + 1].active
 
         def rule_2(i, j):
-            return True if self.no_middle_cells[i + 1][j].active else False
+            return self.no_middle_cells[i + 1][j].active
 
         def rule_3(i, j):
-            return True if self.no_middle_cells[i][j - 1].active else False
+            return self.no_middle_cells[i][j - 1].active
 
         def rule_4(i, j):
-            return True if self.no_middle_cells[i - 1][j].active else False
+            return self.no_middle_cells[i - 1][j].active
 
         i_max, j_max = self.shape()
         i_max -= 1
@@ -337,7 +337,7 @@ class SpacialMatrix(AssemblyBlock):
             (i, j) = (0, 0)
         if not self.no_middle_cells[i][j].active:
             m = self.find_active_neighbour(i, j)
-            while self.no_middle_cells[i][j].display() == "⬜":
+            while not self.no_middle_cells[i][j].active:
                 i, j = m
                 m = self.find_active_neighbour(i, j)
             i, j = m
