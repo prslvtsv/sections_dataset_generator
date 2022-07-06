@@ -49,11 +49,31 @@ def f2d(f, n=4):
     return d.quantize(dd, rounding=ROUND_HALF_EVEN)
 
 
-def ghpt2xyz(pt, rnd=True):
+def ghpt2xyz(pt, prec=6, asstr=False):
     x, y, z = pt.X, pt.Y, pt.Z
-    if rnd:
-        return (f2f(x), f2f(y), f2f(z))
-    return (x, y, z)
+    if asstr:
+        return (f2s(x, prec), f2s(y, prec), f2s(z, prec))
+    return (f2f(x, prec), f2f(y, prec), f2f(z, prec))
+
+
+# to work in grass
+def ghply2xyz(polyline, prec=6, asstr=False):
+    points = polyline.ToArray()
+    return [ghpt2xyz(pt, prec, asstr) for pt in points]
+
+
+def gprint(toprint):
+    print(toprint)
+
+
+def printlines(lst):
+    print("\n\n".join(lst))
+    # print("")
+
+
+# print list line by line
+def printeach(lst):
+    [gprint(i) for i in lst]
 
 
 ################################################

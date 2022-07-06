@@ -117,7 +117,7 @@ class EvalBase:
             chaincall(self)
         return self
 
-    def for_print(self, altval=None, nonzero=True, prec=None, label=True, endchar=""):
+    def for_print(self, altval=None, nonzero=True, prec=None, label=False, endchar=""):
         if prec is None:
             # print("prec none")
             prec = self.pr
@@ -331,6 +331,8 @@ def test_appriser():
     # print(" ")
 
 
+################################################
+################################################
 if __name__ == "__main__":
     start = time.process_time()
     for i in range(1):

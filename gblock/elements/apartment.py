@@ -19,13 +19,13 @@ from collections import OrderedDict
 
 
 class Apartment(SpacialMatrix):
-    def __init__(self, padding=(0, 0), parent=None):
+    def __init__(self, padding=(0, 0), parent=None, spaceType=""):
         SpacialMatrix.__init__(self, padding)
         self.typename = "Apartment"
         self.util = False
         self.parent = parent
         self.attrib = OrderedDict()
-        self.spaceType = "residential"
+        self.spaceType = spaceType
         self.bedrooms = 0
 
     @property

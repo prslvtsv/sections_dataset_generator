@@ -11,7 +11,7 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 )
 
-from glock.elements.matrix import MatrixCell
+from gblock.elements.matrix import MatrixCell
 from gblock.utils.utils import f2s, f2f
 
 
@@ -29,6 +29,7 @@ class Tile(MatrixCell):
         self.door = None
 
     def _init_from_instance(self, pos, obj, apt):
+        # print("inscance creation ", pos)
         MatrixCell.__init__(self, pos, apt, obj.active)
 
     def outline_xyz(self, as_str=False, closed=False):
@@ -39,6 +40,9 @@ class Tile(MatrixCell):
             res = [(f2f(x), f2f(y), f2f(z)) for (x, y, z) in self.outline]
 
         return res if closed else res[:-1]
+
+    def has_wc(self):
+        return self.attrib["wc"]
 
 
 class TileDump:

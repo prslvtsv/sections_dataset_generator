@@ -41,6 +41,7 @@ class MatrixCell(NestedObject):
         self.data = None
         self.active = enable
         self.color = "⬛"
+        self.colors = ["⬛", "⬜", "🟨", "🟦", "🟧", "🟪", "🟥"]
         if not self.parent is None:
             self.pp = self.parent.padding
 
@@ -60,6 +61,17 @@ class MatrixCell(NestedObject):
             self.color = char
         return self.color if self.active else "⬜"
         # return "⬛" if self.active else "⬛"
+
+    def get_color(self, i, util=False):
+        if self.active:
+            if util:
+                return "⚫"
+            try:
+                return self.colors[i]
+            except:
+                return self.colors[0]
+        else:
+            return self.colors[1]
 
     def __repr__(self):
         return "⬛" if self.active else "⬜"
