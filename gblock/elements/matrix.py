@@ -317,10 +317,11 @@ class SpacialMatrix(AssemblyBlock):
             if rule_4(i, j):
                 return i - 1, j
         # print('no match')
-        return i, j + 1
+        return i-1, j
 
     # GB addition
     def find_matrix_boundary_indeces(self, i=None, j=None):
+        print(self)
         if i == None and j == None:
             (i, j) = (0, 0)
         if not self.no_middle_cells[i][j].active:
@@ -332,14 +333,24 @@ class SpacialMatrix(AssemblyBlock):
         res = [(i, j)]
         i_, j_ = i, j
         n = self.find_active_neighbour(i_, j_)
+
         while n != res[0]:
-            prev_pos = res[-1]
-            res.append(n)
-            self.no_middle_cells[n[0]][n[1]] = MatrixCell((n[0], n[1]), self)
-            # for i in self.no_middle_cells:
-            #     print(i)
-            i_, j_ = n
-            n = self.find_active_neighbour(i_, j_, prev_pos)
+            try:
+                prev_pos = res[-1]
+                if self.no_middle_cells[n[0]][n[1]].active:
+                    res.append(n)
+                self.no_middle_cells[n[0]][n[1]] = MatrixCell((n[0], n[1]), self)
+                # for i in self.no_middle_cells:
+                #     print(i)
+                i_, j_ = n
+                # for i in self.no_middle_cells:
+                #     print(i)
+                n = self.find_active_neighbour(i_, j_, prev_pos)
+                print(n)
+            except Exception as e:
+                # print(e)
+                # print(n)
+                break
         self.no_middle_cells[n[0]][n[1]] = MatrixCell((n[0], n[1]), self)
         return res
 
