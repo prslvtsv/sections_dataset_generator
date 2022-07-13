@@ -11,7 +11,7 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 )
 
-from glock.elements.matrix import MatrixCell
+from gblock.elements.matrix import MatrixCell
 from gblock.utils.utils import f2s, f2f
 
 
