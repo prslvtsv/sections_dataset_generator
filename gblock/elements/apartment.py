@@ -34,20 +34,21 @@ class Apartment(SpacialMatrix):
 
     @property
     def tiles(self):
-        return self.cells
+        return self.active_cells()
 
     def tiles_outline(self):
         return [cell.outline for cell in self.active_cells()]
 
-    def from_dump(self, dump, mm2m=True):
+    def from_dump(self, dump, mm2m=False):
         ad = dump.attrib
         indexes = [a.pos for a in dump.tiles]
         self.from_indexes(indexes)
 
         def to_m(mm):
-            return f2f(mm * 0.01, 4) if mm2m else f2f(mm, 4)
+            return f2f(mm * 0.001, 4) if mm2m else f2f(mm, 4)
 
-        self.typename = "Catalogue_Apartment"
+        self.typename = "CatalogueApartment"
+        self.shapeType = None
         self.spaceType = "residential"
         self.encoding = ad["Name"][0]
         self.attrib["unitLocation"] = copy.deepcopy(ad["UnitLocation"])
@@ -65,14 +66,53 @@ class Apartment(SpacialMatrix):
         self.bedrooms = rnumb
 
         for td in dump.tiles:
-            tile = Tile(pos=td.pos, parent=self, enable=True).from_dump(td)
+            tile = Tile(pos=td.pos, parent=self, enable=True).from_dump(td, mm2m)
             self.cells[tile.index()[0]][tile.index()[1]] = tile
 
         return self
 
-    @property
-    def depth(self):
-        return max(set([c.size[1] in self.active_cells()]))
+    def info(self, info=True, matrix=True, attr=False, tile=False, short=False):
+        res = []
+        res.append("▔".ljust(100, "▔"))
+
+        label = "APARTMENT INFO:\n    {}".format(self.encoding)
+        typename = "".join(["    typename:  ", self.typename])
+        shapeType = "".join(["    shapeType: ", self.shapeType])
+        spaceType = "".join(["    spaceType: ", self.spaceType, "\n"])
+
+        mtx = "\n".join(["    " + l for l in repr(self).splitlines()])
+        indexes = ", ".join(["{}:{}".format(a[0], a[1]) for a in self.active_indexes()])
+        indexes = "    indexes: \n        " + indexes
+        attributes = "\n".join(
+            ["      • " + ": ".join([str(k), str(v)]) for k, v in self.attrib.items()]
+        )
+        attributes += "\n" + "\n".join(
+            ["      • " + ": ".join(["bedrooms", str(self.bedrooms)])]
+        )
+        attributes = "    apt attributes: \n" + attributes
+        tiles = [t.info(short) for t in self.tiles]
+        if info:
+            res.append(label + "\n")
+            if not short:
+                res.append(typename)
+            res.append(shapeType)
+            if not short:
+                res.append(spaceType)
+            res.append(indexes + "\n")
+        if matrix:
+            res.append(mtx + "\n")
+        if attr:
+            res.append(attributes)
+        if tile:
+            res.extend(tiles)
+        else:
+            res.append("\n    " + " ".join([str(s.size) for s in self.tiles]) + "\n")
+        res.append("▁".ljust(100, "▁"))
+        return "\n".join(res)
+
+    # @property
+    # def depth(self):
+    #     return max(set([c.size[1] in self.active_cells()]))
 
     # @property
     # def width(self):
@@ -90,13 +130,14 @@ class Apartment(SpacialMatrix):
             return n
 
         tl = [
-            [(sh_str(x), sh_str(y), sh_str(z)) for (x, y, z) in cl.outline]
+            [(sh_str(a.x), sh_str(a.y), sh_str(a.z)) for a in cl.outline]
             for cl in self.active_cells()
         ]
         # print tl
         str_coords = set(sum(tl, []))
         # print str_coords
         coords = [((float(x), float(y), float(z))) for (x, y, z) in str_coords]
+        print(coords)
         display_mtx = SpacialMatrix().from_coordinates(coords)
         # print display_mtx.shape()
         b_out, b_in = display_mtx.get_matrix_boundary_indeces()

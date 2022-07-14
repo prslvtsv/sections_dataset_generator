@@ -76,10 +76,9 @@ class FloorLayout(AssemblyBlock):
 
                 # change later, just sample
                 if ii == 0 and jj == 0 and not utility:
-                    tileCell.attrib["wc"] = True
+                    tileCell.utils["wc"] = True
                 else:
-                    tileCell.attrib["wc"] = False
-
+                    tileCell.utils["wc"] = False
                 # finally assign new tile cell to space cells
                 space.cells[ii][jj] = tileCell
             return space
@@ -117,7 +116,6 @@ class FloorLayout(AssemblyBlock):
                 t = XYZ(xyz=location)
             elif len(location) == 2:
                 t = XYZ(location[0], location[1])
-
         for spdiv in self.spacediv:
             for apt in self.spacediv[spdiv]:
                 for i, iv in enumerate(apt.cells):
@@ -127,7 +125,6 @@ class FloorLayout(AssemblyBlock):
                                 o = self.origin
                                 l = apt.cells[i][j].outline[c]
                                 apt.cells[i][j].outline[c] = XYZ.translate(l, t, o)
-
         return self
 
     def get_apartments(self):

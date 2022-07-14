@@ -22,7 +22,7 @@ class AttribAddress:
     """Base class to handle conversion from attributes to labeled address in xarray DB"""
 
     def __init__(self):
-        self.attr = {}
+        self.attadr = {}
 
     # TODO:
     # all needed operations. currently works just as a placeholder

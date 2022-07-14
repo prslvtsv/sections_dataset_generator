@@ -96,7 +96,7 @@ def run_test():
     aptLayouts = run_dlx_sim(TEST_FLOOR, TEST_APT)
     # for s in aptLayouts:
     #     for t in s:
-    #
+
     #         mtx = SpacialMatrix().from_indexes(t)
     #         print(mtx)
     #     print()

@@ -25,9 +25,10 @@ I = "⬜⬜⬛\n⬜⬜⬛\n⬛⬛⬛"
 J = "⬜⬜⬛\n⬜⬛⬛\n⬛⬛⬛"
 K = "⬜⬛⬛\n⬜⬛⬛\n⬛⬛⬛"
 L = "⬜⬛⬛\n⬛⬛⬛\n⬛⬛⬛"
+M = "⬛⬛\n⬛⬛"
 
-_all = [A, B, C, D, E, F, G, H, I, J, K, L]
-_names = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+_all = [A, B, C, D, E, F, G, H, I, J, K, L, M]
+_names = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"]
 
 
 class ApartmentShape:
@@ -36,7 +37,7 @@ class ApartmentShape:
         self.strshape = strshape
         self.indexes = self.to_index()
         self.matrix = SpacialMatrix().from_indexes(self.indexes)
-        self.bedrooms = len(self.indexes) - 1
+        # self.bedrooms = len(self.indexes) - 1
 
     def to_index(self):
         sh = self.strshape.splitlines()
@@ -48,21 +49,20 @@ class ApartmentShape:
         return idx
 
     def info(self):
-        return "name: {}\nbrms: {}\n{}\n{}".format(
-            self.name, self.bedrooms, self.strshape, str(self.indexes)
-        )
+        return "name: {}\n{}\n{}".format(self.name, self.strshape, str(self.indexes))
 
     def has_same_shape(self, other):
         return SpacialMatrix.compare(self.matrix, other, mode="formation")
 
 
 ALL = [ApartmentShape(n, v) for n, v in list(zip(_names, _all))]
+UP_TO_1 = [ApartmentShape(n, v) for n, v in list(zip(_names[:1], _all[:1]))]
 UP_TO_2 = [ApartmentShape(n, v) for n, v in list(zip(_names[:2], _all[:2]))]
 UP_TO_3 = [ApartmentShape(n, v) for n, v in list(zip(_names[:5], _all[:5]))]
 
 
 def print_up_to_2():
-    shapes = [v.info() for v in UP_TO_2]
+    shapes = [v.info() for v in ALL]
     return "\n\n".join(shapes)
 
 

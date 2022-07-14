@@ -41,9 +41,9 @@ class Tile(MatrixCell):
     def outline_xyz(self, as_str=False, closed=False):
         res = None
         if as_str:
-            res = [(f2s(x), f2s(y), f2s(z)) for (x, y, z) in self.outline]
+            res = [(f2s(a.x), f2s(a.y), f2s(a.z)) for a in self.outline]
         else:
-            res = [(f2f(x), f2f(y), f2f(z)) for (x, y, z) in self.outline]
+            res = [(f2f(a.x), f2f(a.y), f2f(a.z)) for a in self.outline]
 
         return res if closed else res[:-1]
 
@@ -51,7 +51,7 @@ class Tile(MatrixCell):
         td = tiledump
 
         def to_m(mm):
-            return f2f(mm * 0.01, 4) if mm2m else f2f(mm, 4)
+            return f2f(mm * 0.001, 4) if mm2m else f2f(mm, 4)
 
         # print(td.attrib.keys())
         # print(td.utils.keys())
@@ -70,6 +70,48 @@ class Tile(MatrixCell):
             self.door = tuple([to_m(v) for v in td.ref["doorPoint"]])
 
         return self
+
+    def info(self, short=True):
+        pos = "{}:\n        [{}:{}]".format("index", self.pos[0], self.pos[1])
+        attributes = "\n".join(
+            ["      • " + ": ".join([str(k), str(v)]) for k, v in self.attrib.items()]
+        )
+        attributes = "attributes: \n" + attributes
+        utility = "\n".join(
+            ["      • " + ": ".join([str(k), str(v)]) for k, v in self.utils.items()]
+        )
+        utility = "utility: \n" + utility
+        size = "{}:\n        {},{}".format("size", self.size[0], self.size[1])
+        outline = [
+            ", ".join([f2s(x, 2), f2s(y, 2), f2s(y, 2)]) for x, y, z in self.outline
+        ]
+        outline = "outline: \n" + "\n".join(["        ({})".format(o) for o in outline])
+        window = "windowPt: \n" + "      • " + str(self.window)
+        door = "doorPt: \n" + "      • " + str(self.door)
+        reslong = "\n    ".join(
+            [
+                "-------------------------------",
+                "TILE {} INFO:".format(self.pos),
+                pos,
+                attributes,
+                utility,
+                size,
+                outline,
+                window,
+                door,
+            ]
+        )
+
+        resshort = "\n    ".join(
+            [
+                "-------------------------------",
+                "TILE {} INFO:".format(self.pos),
+                "\n".join(utility.splitlines()[:2]),
+                size,
+                door,
+            ]
+        )
+        return resshort if short else reslong
 
     def has_wc(self):
         return self.utils["wc"]

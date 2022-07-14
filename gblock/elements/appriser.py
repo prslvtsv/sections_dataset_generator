@@ -21,6 +21,13 @@ import time
 class AppriserBase:
     def __init__(self, target):
         self._target = target
+        self._eval_prec = 6
+        self._disp_prec = 4
+
+
+class FloorAppriser(AppriserBase):
+    def __init__(self, target):
+        AppriserBase.__init__(self, target)
 
 
 class LayoutAppriser(AppriserBase):
@@ -34,13 +41,13 @@ class LayoutAppriser(AppriserBase):
     def eval_apart_ratio(self):
         aparts = self._target.get_apartments()
         bedrooms = [apt.bedrooms for apt in aparts]
+        # print("bedrooms", bedrooms)
         self._aptratio.evaluate(bedrooms)
 
     def aprt(self, mode="obj"):
         # return object itself by default
         if mode in "obj":
             return self._aptratio
-
         elif mode.startswith("."):
             if len(mode) < 2:
                 prec = self._disp_prec
@@ -158,7 +165,9 @@ class LayoutSize(EvalBase):
 
 
 class ApartmentRatio(EvalBase):
-    bands = OrderedDict([("st", 0), ("b1", 1), ("b2", 2), ("b3", 3), ("b4", 4)])
+    bands = OrderedDict(
+        [("st", 0), ("b1", 1), ("b2", 2), ("b3", 3), ("b4", 4), ("b5", 5)]
+    )
 
     def __init__(self, prec=6):
         if prec <= 1:
@@ -176,24 +185,33 @@ class ApartmentRatio(EvalBase):
         # print "_values", self.values
         total = len(bedrooms)
         count = OrderedDict()
-        # print "unq bdrm", set(bedrooms)
+        # print("unq bdrm", set(bedrooms))
+
         for bd in set(bedrooms):
-            count[bd] = bedrooms.count(bd)
+            try:
+                count[bd] = bedrooms.count(bd)
+            except:
+                print("invllid room number ", bd)
         # print "count", count
         # self.bedsCount = count
         m = OrderedDict([(vv, kk) for kk, vv in self._bands.items()])
         for k, v in count.items():
-            self.setval(m[k], f2f(float(v) / total))
-            self.bedsCount[m[k]] = v
+            try:
+                self.setval(m[k], f2f(float(v) / total))
+                self.bedsCount[m[k]] = v
+            except:
+                print("invllid key ", k)
         # print(sum(self.val))
         itr = 5
         while not self.balance_total() and itr > 0:
             # print("while runs ", abs(5 - itr))
             itr -= 1
 
-    def from_ratios(self, st=0, b1=0, b2=0, b3=0, b4=0, balance=False, ratios=None):
+    def from_ratios(
+        self, st=0, b1=0, b2=0, b3=0, b4=0, b5=0, balance=False, ratios=None
+    ):
         if ratios is None:
-            ratios = [st, b1, b2, b3, b4]
+            ratios = [st, b1, b2, b3, b4, b5]
             self.setvals(ratios)
         else:
             if (len(self._values.keys()) - len(ratios)) != 0:
@@ -247,6 +265,7 @@ class ApartmentRatio(EvalBase):
         return self.for_print(altval=val, prec=prec, endchar=" %")
 
     def match_ratio(self, other, tolerance=None, nonzero=True):
+        other = other._values
         if tolerance is None:
             tolerance = f2f(0.02, 2)
         vv = [f2f(self._values[k], self.pr) for k in other.keys()]
@@ -295,8 +314,11 @@ def test_appriser():
     for a in tapprs:
 
         print(a.aprt())
+        print()
         print(a.aprt("."))
+        print()
         print(a.aprt("%"))
+        print()
         print(a.aprt("bednum"))
         print("------------------")
         pass
@@ -305,19 +327,24 @@ def test_appriser():
     # print(beda)
     print(ar)
     print(ar.print_ratio())
+    print()
     print(ar.print_percent())
+    print()
     print(ar.print_beds())
     # print("------------------")
 
-    # pra = ApartmentRatio().from_ratios(ratios=rata)
-    # prb = ApartmentRatio().from_ratios(ratios=ratb)
-    # prc = ApartmentRatio().from_ratios(b4=0.2700)
-    # ma = " ".join([str(appr.aprt_match(pra._values, 0.2))[:1] for appr in tapprs])
-    # mb = " ".join([str(appr.aprt_match(prb._values, 0.4))[:1] for appr in tapprs])
-    # mc = [appr.aprt() for appr in tapprs if appr.aprt_match(prc._values, 0.01)]
-    # print(ma)
-    # print(mb)
-    # print(mc)
+    pra = ApartmentRatio().from_ratios(ratios=rata)
+    prb = ApartmentRatio().from_ratios(ratios=ratb)
+    prc = ApartmentRatio().from_ratios(b4=0.2700)
+    ma = " ".join([str(appr.aprt_match(pra, 0.2))[:1] for appr in tapprs])
+    mb = " ".join([str(appr.aprt_match(prb, 0.4))[:1] for appr in tapprs])
+    mc = [appr.aprt() for appr in tapprs if appr.aprt_match(prc, 0.01)]
+    print()
+    print(ma)
+
+    print(mb)
+    print()
+    print(mc)
 
     # # print([True for appr in tapprs if appr.aprt_match(prb._values, 0.5)])
     # # print([appr for appr in tapprs if appr.aprt_match(prb._values)])
